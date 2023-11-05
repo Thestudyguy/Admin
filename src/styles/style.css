@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Antonio:wght@300&family=Cinzel:wght@500&family=Dosis:wght@300&family=Gloria+Hallelujah&family=Inter:wght@300;400;500&family=Kanit:wght@300&family=Quicksand:wght@500&family=Roboto+Slab&display=swap");
+body {
+  height: 100vh;
+  overflow: hidden;
+}
+
+#login {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#login #containerLogin {
+  padding: 40px;
+  font-family: "Kanit", sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
+  color: black;
+  font-size: 4em;
+}
+#login #containerLogin img {
+  width: 80%;
+}
+#login #containerLogin div:nth-child(2) {
+  display: flex;
+  justify-content: end;
+  align-items: end;
+}
+#login #loginCreds {
+  height: 100vh;
+  background-color: #2daaff;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  justify-content: center;
+  align-items: start;
+  padding: 100px;
+  padding-left: 10px;
+}
+#login #loginCreds span {
+  font-family: "Quicksand", sans-serif;
+  font-size: 4em;
+  color: whitesmoke;
+}
+#login #loginCreds form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  gap: 10px;
+}
+#login #loginCreds form input, #login #loginCreds form button {
+  height: 40px;
+  width: 270px;
+  font-family: "Roboto Slab", serif;
+}
+#login #loginCreds form input {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid whitesmoke;
+  color: whitesmoke;
+}
+#login #loginCreds form input::-moz-placeholder {
+  color: whitesmoke;
+}
+#login #loginCreds form input::placeholder {
+  color: whitesmoke;
+}
+#login #loginCreds form button {
+  background-color: #5ec5ff;
+  border: 0px;
+  color: whitesmoke;
+}
+#login .card {
+  padding-left: 50px;
+  background-color: transparent;
+  border: none;
+}
+
+#dashboard {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#dashboard .item-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px dotted whitesmoke;
+}
+#dashboard .item-wrapper div:first-child {
+  flex: 1;
+}
+#dashboard .item-wrapper div:nth-child(2) {
+  padding: 50px;
+}/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@300&family=Cinzel:wght@500&family=Dosis:wght@300&family=Gloria+Hallelujah&family=Inter:wght@300;400;500&family=Kanit:wght@300&family=Quicksand:wght@500&family=Roboto+Slab&display=swap');
+$roboto: 'Roboto Slab', serif;
+$quicksand: 'Quicksand', sans-serif;
+$kanit: 'Kanit', sans-serif;
+body{
+    height: 100vh;
+    overflow: hidden;
+}
+#login{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    #containerLogin{
+        padding: 40px;
+        font-family: $kanit;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: end;
+        color: black;
+        font-size: 4em;
+        img{
+            width: 80%;
+        }
+        div:nth-child(2){
+            display: flex;
+            justify-content: end;
+            align-items: end;
+        }
+    }
+    #loginCreds{
+        span{
+            font-family: $quicksand;
+            font-size: 4em;
+            color: whitesmoke;
+        }
+        height: 100vh;
+        background-color: #2daaff;
+        display: flex;
+        flex-direction: column;
+        gap: 35px;
+        justify-content: center;
+        align-items: start;
+        padding: 100px;
+        padding-left: 10px;
+        form{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: start;
+            gap: 10px;
+            input, button{
+                height: 40px;
+                width: 270px;
+                font-family: $roboto;
+            }
+            input{
+                background-color: transparent;
+                border: none;
+                outline: none;
+                border-bottom: 1px solid whitesmoke;
+                color: whitesmoke;
+                &::placeholder{
+                    color: whitesmoke;
+                }
+            }
+            button{
+                background-color: #5ec5ff;
+                border: 0px;
+                color: whitesmoke;
+            }
+        }
+    }
+    .card{
+        padding-left: 50px;
+       background-color: transparent;
+       border: none;
+    }
+}
+#dashboard{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .item-wrapper{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px dotted whitesmoke;
+
+        div:first-child{
+            flex: 1;
+
+        }
+        div:nth-child(2){
+            padding: 50px;
+        }
+    }
+}

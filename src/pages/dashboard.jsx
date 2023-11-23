@@ -1,102 +1,312 @@
-import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import { useNavigate } from "react-router-dom";
+import { db } from "../dbconfig/firebaseConfig";
+import { push, ref, onValue, remove } from "firebase/database";
 import { Modal } from "bootstrap";
-
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const [uname, setUname] = useState("");
-  const [password, setPassword] = useState("");
+  const dbref = ref(db, "Instructors");
+  const [showModal, setShowModal] = useState(false);
+  const [name, Setname] = useState('');
+  const [email, Setemail] = useState('');
+  const [randomNumber, setRandomNumber] = useState(null);
+  const [department, setDepartment] = useState('');
+  const [instructors, setInstructors] = useState([]);
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const handleCreateUser = async (e) => {
+const handleToggleCollapse = () => {
+  setIsCollapsed(!isCollapsed);
+};
+useEffect(() => {
+  const fetchData = () => {
+    onValue(dbref, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const instructorArray = Object.values(data);
+        setInstructors(instructorArray);
+      } else {
+        setInstructors([]);
+      }
+    });
+  };
+
+  fetchData();
+
+  return () => {
+    onValue(dbref, () => {});
+  };
+}, []);
+
+
+
+  const generateRandomNumber = (e) => {
     e.preventDefault();
-
-    const auth = getAuth();
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, uname, password);
-      const user = userCredential.user;
-      console.log("User created:", user);
-      setPassword('');
-      setUname('');
-      const modal = new Modal(document.getElementById('successModal'));
-      modal.show();
-    } catch (error) {
-      console.error("Error creating user:", error);
-      const Errormodal = new Modal(document.getElementById('errorModal'));
-      Errormodal.show();
-    }
+    const newRandomNumber = Math.floor(Math.random() * 10000);
+    //const newRandomNumber1 = Math.floor(Math.random() * 10000);
+    //const randomID = Math.floor(newRandomNumber + newRandomNumber1);
+    setRandomNumber(newRandomNumber);
   };
 
-  const handleLogout = async () => {
-    const auth = getAuth();
-    try {
-      await signOut(auth);
-      navigate("/");
-    } catch (error) {
-      console.error("Error logging out: ", error);
-    
+  const pushdata = () => {
+    if (name.trim() === '' || email.trim() === '' || department.trim() === '') {
+      setFormSubmitted(true);
+      return;
     }
+  
+    push(dbref, {
+      ID: randomNumber,
+      Instructor: name,
+      Email: email,
+      Schedule: department,
+    })
+      .then(() => {
+        setRandomNumber(null);
+        Setname('');
+        Setemail('');
+        setDepartment('');
+        setFormSubmitted(false);
+        const formModal = new Modal(document.getElementById('create'));
+        formModal.hide();
+        const success = new Modal(document.getElementById('success'));
+        success.show();
+        setTimeout(() => {
+          success.hide();
+        }, 1500);
+      })
+      .catch((error) => {
+        console.error('Error pushing data:', error);
+        const errorModal = new Modal(document.getElementById('error'));
+        const errorContent = document.getElementById('errorContent');
+        errorContent.textContent = `Error: ${error.message || 'Unknown error'}`;
+        errorModal.show();
+      });
   };
+const newInstuctorModal = () =>{
+  const newInstructor = new Modal(document.getElementById('create'));
+  newInstructor.show();
+}
 
+onValue(dbref, (snapshot) => {
+  const data = snapshot.val();
+});
+const handleViewClick = (instructor) => {
+  const view = new Modal(document.getElementById('view'));
+  view.show();
+  setSelectedInstructor(instructor);
+  setShowModal(true);
+};
+const handleDeleteClick = (instructor) => {
+  setSelectedInstructor(instructor);
+  const deleteModal = new Modal(document.getElementById('delete'));
+  deleteModal.show();
+};
+const handleDelete = (instructorId) => {
+  const instructorRef = ref(db, `Instructors/${instructorId}`);
+  remove(instructorRef)
+    .then(() => {
+      console.log("Instructor deleted successfully");
+      // Optionally, update your local state to reflect the deletion
+      // For example, you can filter out the deleted instructor from the state
+      setInstructors((prevInstructors) => prevInstructors.filter((instructor) => instructor.ID !== instructorId));
+    })
+    .catch((error) => {
+      console.error("Error deleting instructor:", error);
+    });
+};
   return (
-    <div className="jumbotron-fluid bg-danger" id="dashboard">
-      <div className="item-wrapper">
-        <form onSubmit={handleCreateUser}>
-          <input
-            value={uname}
-            onChange={(e) => setUname(e.target.value)}
-            type="text"
-            placeholder="username or email"
-            name="uname"
-            id="uname"
-          />
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            placeholder="password"
-            name="password"
-            id="password"
-          />
-          <button type="submit" className="btn btn-primary">
-            Create
+    <div className="bg-success container-fluid p-5" id="dashboard">
+      <div className="col">
+        <div className="row">
+          <ul>
+            <li>Accounts</li>
+            <li>Accounts</li>
+            <li>Accounts</li>
+            <li>Accounts</li>
+          </ul>
+        </div>
+        <div className="">
+          <button className="btn btn-primary" onClick={newInstuctorModal}>
+            New+
           </button>
-        </form>
-        <button onClick={handleLogout} className="btn btn-primary">
-          Logout
-        </button>
-        <div className="bg-secondary p-5">lorem ipsum dolor sit amet</div>
-        <div className="bg-light p-5">lorem ipsum dolor sit amet</div>
+        </div>
+        <div className="row">
+          <div className="">
+            <table className="table table-striped text-uppercase">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Instructor</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Schedule</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+              {instructors.map((instructor) => (
+  <tr key={instructor.ID}>
+    <td>{instructor.ID}</td>
+    <td>{instructor.Instructor}</td>
+    <td>{instructor.Email}</td>
+    <td>
+      <button
+        className="btn btn-primary"
+        onClick={() => handleViewClick(instructor)}
+      >
+        View Details
+      </button>
+    </td>
+    <td>
+      <button className="btn btn-success">Edit</button>
+      <button className="btn btn-danger" onClick={() => handleDelete(instructor.ID)}>
+  Delete
+</button>
+    </td>
+  </tr>
+))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div id="successModal" class="modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog ">
-    <div class="modal-content bg-success">
-      <div class="modal-body text-light">
-        <center>
-        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
-          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-        </svg>
-           User created 
-        </center>
-       
+      <div id="create" className="modal fade text-uppercase" tabIndex="-1" role="dialog">
+  <div className="modal-dialog modal-dialog-centered d-flex align-items-center justify-content-center">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h5 className="modal-title">Add New Instructor</h5>
+        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div className="modal-body text-light">
+      <form action="" className="my-3">
+      <div className="id">
+        <input
+          type="text"
+          name="randomNumberInput"
+          value={randomNumber !== null ? randomNumber : ''}
+          disabled
+          id=""
+          className={`form-control ${formSubmitted && randomNumber === null ? 'border border-danger' : ''}`}
+        />
+        <button className="btn btn-primary ms-2" onClick={generateRandomNumber}>
+          ID
+        </button>
+      </div>
+
+      <input
+        type="text"
+        className={`form-control ${formSubmitted && name.trim() === '' ? 'border border-danger' : ''} mt-3`}
+        name="fullname"
+        id=""
+        placeholder="Full Name"
+        value={name}
+        onChange={(e) => Setname(e.target.value)}
+      />
+
+      <input
+        type="text"
+        className={`form-control ${formSubmitted && email.trim() === '' ? 'border border-danger' : ''} mt-3`}
+        name="email"
+        id=""
+        placeholder="Email"
+        value={email}
+        onChange={(e) => Setemail(e.target.value)}
+      />
+
+      <select
+        name="department"
+        className={`form-control ${formSubmitted && department.trim() === '' ? 'border border-danger' : ''} mt-3`}
+        id=""
+        value={department}
+        onChange={(e) => setDepartment(e.target.value)}
+      >
+        <option value="" disabled hidden>
+          Select Department
+        </option>
+        <option value="BSIT">BSIT</option>
+        <option value="BSCRIM">BSCRIM</option>
+        <option value="BSBA">BSBA</option>
+        <option value="BSHM">BSHM</option>
+        <option value="BTVTED">BTVTED</option>
+      </select>
+    </form>
+      </div>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" className="btn btn-primary" onClick={pushdata}>
+          Save changes
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="errorModal" class="modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content bg-danger">
-      <div class="modal-body text-light">
-        <center>
-        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-        </svg>
-          Error creating user. Check fields for errors   
-        </center>
-        
+     <div id="view" className="modal fade" tabIndex="-1" role="dialog">
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-header">
+      <h5 className="modal-title">{selectedInstructor?.Instructor}</h5>
+        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div className="modal-body text-light">
+        <div className="content" style={{ display: 'flex', flexDirection: 'column', fontWeight: '700', gap: '30px' }}>
+          <span className="text-dark">ID: {selectedInstructor?.ID}</span>
+          <span className="text-dark text-uppercase">Instructor: {selectedInstructor?.Instructor}</span>
+          <span className="text-dark">Email: {selectedInstructor?.Email}</span>
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={handleToggleCollapse}
+            data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"
+          >
+            View Schedule
+          </button>
+          <div className={`collapse ${isCollapsed ? 'show' : ''}`} id="collapseExample">
+            <div className="card card-body text-dark">
+              <table className="table table-stripped">
+                asdasd
+              </table>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="success" className="modal fade" tabIndex="-1" role="dialog">
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-body text-success">
+        <center>success</center>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="error" className="modal fade" tabIndex="-1" role="dialog">
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-body text-light">
+      <p id="errorContent"></p>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="delete" className="modal fade" tabIndex="-1" role="dialog">
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-body text-dark">
+        Are you sure you want to delete {selectedInstructor?.Instructor}? <br /> Deleting the instructor's record will also delete the instructor's schedule
+      </div>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" className="btn btn-danger" onClick={handleDelete}>
+  Delete
+</button>
       </div>
     </div>
   </div>

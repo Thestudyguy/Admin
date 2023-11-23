@@ -83,19 +83,25 @@ body {
 
 #dashboard {
   height: 100vh;
+}
+#dashboard .col .row:first-child ul {
   display: flex;
+  flex-direction: row;
+  gap: 70px;
   justify-content: center;
-  align-items: center;
 }
-#dashboard .item-wrapper {
+#dashboard .col .row:first-child ul li {
+  font-family: "Kanit", sans-serif;
+  list-style: none;
+}
+#dashboard .col .row:nth-child(2) {
+  height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px dotted whitesmoke;
+  justify-content: start;
+  align-items: start;
 }
-#dashboard .item-wrapper div:first-child {
-  flex: 1;
-}
-#dashboard .item-wrapper div:nth-child(2) {
-  padding: 50px;
+#dashboard form .id {
+  display: flex;
+  flex-direction: row;
+  height: 35px;
 }/*# sourceMappingURL=style.css.map */

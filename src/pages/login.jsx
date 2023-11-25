@@ -19,12 +19,14 @@ export default function Login() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setIsAuthenticated(true);
-        nav("/dashboard"); // Redirect to dashboard if the user is authenticated
+      } else {
+        setIsAuthenticated(false);
       }
     });
 
     return () => unsubscribe();
-  }, [auth, nav]);
+  }, [auth]);
+
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +41,11 @@ export default function Login() {
       setLoginStatus("Login failed. Invalid username or password");
     }
   };
-
+  useEffect(() => {
+    if (isAuthenticated) {
+      nav("/dashboard");
+    }
+  }, [isAuthenticated, nav]);
   return (
     <div className="jumbotron-fluid" id="login">
       <div className="container-fluid" id="containerLogin">

@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import { db } from "../dbconfig/firebaseConfig";
 import { push, ref, onValue, remove } from "firebase/database";
 import { Modal } from "bootstrap";
+import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const dbref = ref(db, "Instructors");
   const [showModal, setShowModal] = useState(false);
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const [selectedInstructor, setSelectedInstructor] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
-
+  const nav = useNavigate();
 const handleToggleCollapse = () => {
   setIsCollapsed(!isCollapsed);
 };
@@ -42,7 +43,7 @@ useEffect(() => {
 
   const generateRandomNumber = (e) => {
     e.preventDefault();
-    const newRandomNumber = Math.floor(Math.random() * 10000);
+    const newRandomNumber = Math.floor(Math.random() * 1000000);
     //const newRandomNumber1 = Math.floor(Math.random() * 10000);
     //const randomID = Math.floor(newRandomNumber + newRandomNumber1);
     setRandomNumber(newRandomNumber);
@@ -58,7 +59,7 @@ useEffect(() => {
       ID: randomNumber,
       Instructor: name,
       Email: email,
-      Schedule: department,
+      Department: department,
     })
       .then(() => {
         setRandomNumber(null);
@@ -101,26 +102,40 @@ const handleDeleteClick = (instructor) => {
   const deleteModal = new Modal(document.getElementById('delete'));
   deleteModal.show();
 };
-const handleDelete = (instructorId) => {
+
+const handleDelete = () => {
+  const instructorId = selectedInstructor?.ID;
+
+  if (!instructorId) {
+    console.error("Invalid instructor ID");
+    return;
+  }
+
   const instructorRef = ref(db, `Instructors/${instructorId}`);
   remove(instructorRef)
     .then(() => {
       console.log("Instructor deleted successfully");
-      // Optionally, update your local state to reflect the deletion
-      // For example, you can filter out the deleted instructor from the state
-      setInstructors((prevInstructors) => prevInstructors.filter((instructor) => instructor.ID !== instructorId));
+      setInstructors((prevInstructors) =>
+        prevInstructors.filter((instructor) => instructor.ID !== instructorId)
+      );
+      // Close the delete modal if needed
+      const deleteModal = new Modal(document.getElementById('delete'));
+      deleteModal.hide();
     })
     .catch((error) => {
       console.error("Error deleting instructor:", error);
     });
 };
+const subjects = (e) =>{
+  nav('/subjects');
+}
   return (
     <div className="bg-success container-fluid p-5" id="dashboard">
       <div className="col">
         <div className="row">
           <ul>
             <li>Accounts</li>
-            <li>Accounts</li>
+            <li><button className="btn btn-transparent text-dark" onClick={subjects}>Subjects</button></li>
             <li>Accounts</li>
             <li>Accounts</li>
           </ul>
@@ -138,6 +153,7 @@ const handleDelete = (instructorId) => {
                   <th scope="col">ID</th>
                   <th scope="col">Instructor</th>
                   <th scope="col">Email</th>
+                  <th scope="col">Department</th>
                   <th scope="col">Schedule</th>
                   <th scope="col">Actions</th>
                 </tr>
@@ -148,6 +164,7 @@ const handleDelete = (instructorId) => {
     <td>{instructor.ID}</td>
     <td>{instructor.Instructor}</td>
     <td>{instructor.Email}</td>
+    <td>{instructor.Department}</td>
     <td>
       <button
         className="btn btn-primary"
@@ -158,9 +175,9 @@ const handleDelete = (instructorId) => {
     </td>
     <td>
       <button className="btn btn-success">Edit</button>
-      <button className="btn btn-danger" onClick={() => handleDelete(instructor.ID)}>
-  Delete
-</button>
+      <button className="btn btn-danger" onClick={() => handleDeleteClick(instructor)}>
+        Delete
+      </button>
     </td>
   </tr>
 ))}
@@ -254,6 +271,7 @@ const handleDelete = (instructorId) => {
           <span className="text-dark">ID: {selectedInstructor?.ID}</span>
           <span className="text-dark text-uppercase">Instructor: {selectedInstructor?.Instructor}</span>
           <span className="text-dark">Email: {selectedInstructor?.Email}</span>
+          <span className="text-dark">Department: {selectedInstructor?.Department}</span>
           <button
             className="btn btn-primary"
             type="button"
@@ -265,7 +283,6 @@ const handleDelete = (instructorId) => {
           <div className={`collapse ${isCollapsed ? 'show' : ''}`} id="collapseExample">
             <div className="card card-body text-dark">
               <table className="table table-stripped">
-                asdasd
               </table>
             </div>
           </div>

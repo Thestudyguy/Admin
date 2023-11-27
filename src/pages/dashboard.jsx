@@ -50,7 +50,7 @@ useEffect(() => {
   };
 
   const pushdata = () => {
-    if (name.trim() === '' || email.trim() === '' || department.trim() === '') {
+    if (name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
       setFormSubmitted(true);
       return;
     }

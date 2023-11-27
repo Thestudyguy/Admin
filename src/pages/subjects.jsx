@@ -11,8 +11,9 @@ export default function Subjects(){
     const [subjects, setSubjects] = useState([]);
     const [intructors, setInstructors] = useState(null);
     const [subjectKey, setSubjectKey] = useState(null);
+    const [departmens, setDepartment] = useState([]);
     const dbref = ref(db, "Subjects/BSIT");
-    
+    const ins = ref(db, 'Instructors/');
   useEffect(() => {
     const fetchData = () => {
       onValue(dbref, (snapshot) => {
@@ -33,6 +34,29 @@ export default function Subjects(){
 
     return () => {
       onValue(dbref, () => {});
+    };
+  }, []);
+  
+  useEffect(() => {
+    const fetchData = () => {
+      onValue(ins, (snapshot) => {
+        const datains = snapshot.val();
+        if (datains) {
+          const insArray = Object.entries(datains).map(([key, value]) => ({
+            key,
+            ...value,
+          }));
+          setDepartment(insArray);
+        } else {
+          setDepartment([]);
+        }
+      });
+    };
+    
+    fetchData();
+
+    return () => {
+      onValue(ins, () => {});
     };
   }, []);
     const BSIT = () => {
@@ -102,19 +126,25 @@ export default function Subjects(){
             deleteInfo.textContent = `Error: ${error.message || 'Unknown error'}`;
           });
       };
-      
+      const Instructor = () =>{
+        const instructor = new Modal(document.getElementById('instructors'));
+        instructor.show();
+      }
     return(
         <div className="container-fluid">
                 <div className="row">
                     <div className="col-6 g-5">
                     <div className="card">
+                      <div className="card-header">
+                        
                       <div className="card-title">
                         <span>
                           <b>BSIT</b>
                         </span>
                       </div>
+                      </div>
                       <div className="card-body">
-                        <table className="table table-stripped">
+                        <table className="table table-bordered">
                           <thead>
                             <tr>
                               <th>Subject Code</th>
@@ -132,6 +162,7 @@ export default function Subjects(){
                                 <td>{subject.SubjectSemester}</td>
                                 <td>{subject.SubjectTerm}</td>
                                 <td>
+                                  <button className="btn btn-success text-light mx-3" onClick={Instructor}>Assign</button>
                                   <button className="btn btn-primary" onClick={() => { ViewInstructors(subject) }}>View</button>
                                   <button className="btn btn-danger mx-3" onClick={() => { ConfirmationModal(subject) }}>Delete</button>
                                 </td>
@@ -253,8 +284,19 @@ export default function Subjects(){
                       <form action="" onSubmit={Submit} className="form-control p-3 g-5">
                         <input value={subjectCode} onChange={(e)=>setSubjectCode(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectCode.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Code" type="text" name="" id="" />
                         <input value={subjectDescription} onChange={(e)=>setSubjectDescription(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectDescription.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Description" type="text" name="" id="" />
-                        <input value={subjectSemester} onChange={(e)=>setSubjectSemester(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectSemester.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Semester" type="text" name="" id="" />
-                        <input value={subjectTerm} onChange={(e)=>setSubjectTerm(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectTerm.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Term" type="text" name="" id="" />
+                        {/**<input value={subjectSemester} onChange={(e)=>setSubjectSemester(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectSemester.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Semester" type="text" name="" id="" /> 
+                        <input value={subjectTerm} onChange={(e)=>setSubjectTerm(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectTerm.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Term" type="text" name="" id="" />*/}
+                        <select name="" className={`form-control my-3 ${formSubmitted && subjectSemester.trim() === '' ? 'border border-danger': ''}`} value={subjectSemester} onChange={(e)=>setSubjectSemester(e.target.value)} id="">
+                          <option value="" selected hidden>Select Semester</option>
+                          <option value="1st Semester">1st Semester</option>
+                          <option value="2nd Semester">2nd Semester</option>
+                        </select>
+                        <select name="" className={`form-control my-3 ${formSubmitted && subjectTerm.trim() === '' ? 'border border-danger': ''}`} value={subjectTerm} onChange={(e)=>setSubjectTerm(e.target.value)} id="">
+                          <option value="" selected hidden>Select Term</option>
+                          <option value="1st Term">1st Term</option>
+                          <option value="2nd Term">2nd Term</option>
+                        </select>
+                      
                       </form>
                       <div className="modal-footer">
                         <button className="btn btn-secondary" data-bs-dismiss="modal">
@@ -344,6 +386,46 @@ export default function Subjects(){
                       <div className="modal-footer">
                         <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button className="btn btn-danger" onClick={deleteSubject}>Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="instructors" className="modal fade" tabIndex="-1" role="dialog">
+                  <div className="modal-dialog modal-dialog-scrollable">
+                    <div className="modal-content" style={{width: 'fit-content'}}>
+                      <div className="modal-header">
+                        <div className="text-dark text-uppercase h5">Assign Subject:</div>
+                      </div>
+                      <div className="modal-body text-success">
+                        <center className="text-success">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr>
+                                <td>Instructor</td>
+                                <td>Email</td>
+                                <td>Department</td>
+                                <td>Actions</td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {departmens.map((ins) => {
+                                if (ins.Department === 'BSIT') {
+                                  return (
+                                    <tr key={ins.key}>
+                                      <td>{ins.Instructor}</td>
+                                      <td>{ins.Email}</td>
+                                      <td>{ins.Department}</td>
+                                      <td>
+                                        <button className="btn btn-success text-light mx-3">Assign</button>
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+                                return null;
+                              })}
+                            </tbody>
+                          </table>
+                        </center>
                       </div>
                     </div>
                   </div>

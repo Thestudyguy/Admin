@@ -6,7 +6,7 @@ import { Modal } from "bootstrap";
 import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const dbref = ref(db, "Instructors");
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(null);
   const [name, Setname] = useState('');
   const [email, Setemail] = useState('');
   const [randomNumber, setRandomNumber] = useState(null);
@@ -32,13 +32,13 @@ useEffect(() => {
     });
   };
 
+
   fetchData();
 
   return () => {
     onValue(dbref, () => {});
   };
 }, []);
-
 
 
   const generateRandomNumber = (e) => {
@@ -49,13 +49,13 @@ useEffect(() => {
     setRandomNumber(newRandomNumber);
   };
 
-  const pushdata = () => {
+  const pushdata = async () => {
     if (name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
       setFormSubmitted(true);
       return;
     }
   
-    push(dbref, {
+   await push(dbref, {
       ID: randomNumber,
       Instructor: name,
       Email: email,
@@ -67,13 +67,14 @@ useEffect(() => {
         Setemail('');
         setDepartment('');
         setFormSubmitted(false);
-        const formModal = new Modal(document.getElementById('create'));
-        formModal.hide();
-        const success = new Modal(document.getElementById('success'));
-        success.show();
-        setTimeout(() => {
-          success.hide();
-        }, 1500);
+        if (showModal) {
+          showModal.hide();
+          const success = new Modal(document.getElementById('success'));
+          success.show();
+          setTimeout(() => {
+            success.hide();
+          }, 1500);
+        }
       })
       .catch((error) => {
         console.error('Error pushing data:', error);
@@ -83,19 +84,16 @@ useEffect(() => {
         errorModal.show();
       });
   };
-const newInstuctorModal = () =>{
-  const newInstructor = new Modal(document.getElementById('create'));
-  newInstructor.show();
-}
+  const newInstuctorModal = () => {
+    const newInstructor = new Modal(document.getElementById('create'));
+    newInstructor.show();
+    setShowModal(newInstructor);
+  };
 
-onValue(dbref, (snapshot) => {
-  const data = snapshot.val();
-});
 const handleViewClick = (instructor) => {
   const view = new Modal(document.getElementById('view'));
   view.show();
   setSelectedInstructor(instructor);
-  setShowModal(true);
 };
 const handleDeleteClick = (instructor) => {
   setSelectedInstructor(instructor);
@@ -118,7 +116,6 @@ const handleDelete = () => {
       setInstructors((prevInstructors) =>
         prevInstructors.filter((instructor) => instructor.ID !== instructorId)
       );
-      // Close the delete modal if needed
       const deleteModal = new Modal(document.getElementById('delete'));
       deleteModal.hide();
     })
@@ -145,10 +142,10 @@ const subjects = (e) =>{
             New+
           </button>
         </div>
-        <div className="row">
+        <div className="row" id="row">
           <div className="">
-            <table className="table table-striped text-uppercase">
-              <thead>
+            <table  className="table table-striped text-uppercase">
+              <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 }}>
                 <tr>
                   <th scope="col">ID</th>
                   <th scope="col">Instructor</th>
@@ -296,8 +293,8 @@ const subjects = (e) =>{
 <div id="success" className="modal fade" tabIndex="-1" role="dialog">
   <div className="modal-dialog">
     <div className="modal-content">
-      <div className="modal-body text-success">
-        <center>success</center>
+      <div className="modal-body lead text-success">
+        <center>New Instructor Added</center>
       </div>
     </div>
   </div>
@@ -314,7 +311,7 @@ const subjects = (e) =>{
 <div id="delete" className="modal fade" tabIndex="-1" role="dialog">
   <div className="modal-dialog">
     <div className="modal-content">
-      <div className="modal-body text-dark">
+      <div className="modal-body text-dark lead">
         Are you sure you want to delete {selectedInstructor?.Instructor}? <br /> Deleting the instructor's record will also delete the instructor's schedule
       </div>
       <div className="modal-footer">

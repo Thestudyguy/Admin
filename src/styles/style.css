@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Antonio:wght@300&family=Cinzel:wght@500&family=Dosis:wght@300&family=Gloria+Hallelujah&family=Inter:wght@300;400;500&family=Kanit:wght@300&family=Quicksand:wght@500&family=Roboto+Slab&display=swap");
 body {
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 #login {
@@ -104,4 +104,112 @@ body {
   display: flex;
   flex-direction: row;
   height: 35px;
+  gap: 15px;
+}
+#dashboard #row {
+  max-height: 700px;
+  overflow: auto;
+}
+
+#subjects #deleteModal .modal-content {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+#subjects #Instructors .modal-content {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+#subjects .card {
+  resize: both;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+#subjects .card .card-header,
+#subjects .card .card-footer {
+  position: static;
+  z-index: 1;
+  top: 0;
+}
+#subjects .card .card-footer {
+  bottom: 0;
+}
+#subjects .card .card-body {
+  max-height: 500px;
+  overflow: auto;
+}
+#subjects .card .button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+  #dashboard #row {
+    max-height: 500px;
+    overflow: auto;
+  }
+}
+@media only screen and (min-width: 1370px) and (max-width: 1605px) {
+  #row {
+    max-height: 700px;
+    overflow: auto;
+  }
+}
+@media only screen and (max-width: 960px) {
+  #subjects {
+    background-color: red;
+  }
+  #subjects #title {
+    position: sticky;
+    z-index: 7;
+    top: 0;
+  }
+  #subjects .row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  #subjects .row td:last-child {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  #subjects .row .card {
+    width: -moz-fit-content;
+    width: fit-content;
+  }
+  #subjects .row .card .card-header,
+  #subjects .row .card .card-footer {
+    position: sticky;
+    z-index: 1;
+    top: 0;
+  }
+  #subjects .row .card .card-footer {
+    bottom: 0;
+  }
+  #subjects .row .card .card-body {
+    max-height: 500px;
+    overflow: auto;
+  }
+  #subjects .row .card .button {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+  #subjects .row .col-6 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #subjects .row .col-6 .card {
+    max-height: 500px;
+    overflow: auto;
+  }
+  #deleteModal .modal-content {
+    width: -moz-fit-content;
+    width: fit-content;
+  }
 }/*# sourceMappingURL=style.css.map */

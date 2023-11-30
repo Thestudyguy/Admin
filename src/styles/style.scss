@@ -4,7 +4,7 @@ $quicksand: 'Quicksand', sans-serif;
 $kanit: 'Kanit', sans-serif;
 body{
     height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 #login{
     height: 100vh;
@@ -107,6 +107,134 @@ body{
             flex-direction: row;
             height: 35px;
             gap: 15px;
+        }
+    }
+    #row{
+        max-height: 700px;
+        overflow: auto;
+    }
+}
+
+#subjects {
+    #deleteModal{
+        .modal-content{
+            width: fit-content;
+        }
+    }
+    #Instructors{
+        .modal-content{
+            width: fit-content;
+        }
+    }
+    .card {
+        resize: both;
+        width: fit-content;
+        .card-header,
+        .card-footer {
+            position: static;
+            z-index: 1;
+            top: 0;
+        }
+
+        .card-footer {
+            bottom: 0;
+        }
+
+        .card-body {
+            max-height: 500px;
+            overflow: auto;
+        }
+        .button{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+    
+}
+@media only screen  
+//laptop 
+and (min-device-width : 768px)   
+and (max-device-width : 1024px)  
+{
+    #dashboard{
+        #row{
+            max-height: 500px;
+            overflow: auto;
+        }
+    }
+} 
+@media only screen   
+//desktop
+and (min-width: 1370px)  
+and (max-width: 1605px)  
+{
+    #row{
+        max-height: 700px;
+        overflow: auto;
+    }
+}
+@media only screen and (max-width: 960px) {
+    #subjects {
+        background-color: red;
+        #title{
+            position: sticky;
+                    z-index: 7;
+                    top: 0;
+        }
+        .row {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+    
+            td:last-child {
+                display: flex;
+                flex-direction: row;
+                gap: 10px;
+            }
+    
+            .card {
+                width: fit-content;
+                .card-header,
+                .card-footer {
+                    position: sticky;
+                    z-index: 1;
+                    top: 0;
+                }
+    
+                .card-footer {
+                    bottom: 0;
+                }
+    
+                .card-body {
+                    max-height: 500px;
+                    overflow: auto;
+                }
+                .button{
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+    
+            .col-6 {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+    
+                .card {
+                    max-height: 500px;
+                    overflow: auto;
+                }
+            }
+        }
+    }
+    #deleteModal{
+        .modal-content{
+            width: fit-content;
         }
     }
 }

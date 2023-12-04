@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import { db } from "../dbconfig/firebaseConfig";
-import { push, ref, onValue, remove } from "firebase/database";
+import { push, ref, onValue, remove, get } from "firebase/database";
 import { Modal } from "bootstrap";
 import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
@@ -13,26 +13,27 @@ export default function Dashboard() {
   const [department, setDepartment] = useState('');
   const [instructors, setInstructors] = useState([]);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [DeleteKey, setDeleteKey] = useState(null);
+  const [InstructorSubjects, setInstructorsSubjects] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const nav = useNavigate();
-const handleToggleCollapse = () => {
-  setIsCollapsed(!isCollapsed);
-};
+  
 useEffect(() => {
   const fetchData = () => {
     onValue(dbref, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const instructorArray = Object.values(data);
+        const instructorArray = Object.entries(data).map(([key, value]) => ({
+          key,
+          ...value,
+        }));
         setInstructors(instructorArray);
       } else {
         setInstructors([]);
       }
     });
   };
-
-
   fetchData();
 
   return () => {
@@ -90,39 +91,78 @@ useEffect(() => {
     setShowModal(newInstructor);
   };
 
-const handleViewClick = (instructor) => {
-  const view = new Modal(document.getElementById('view'));
-  view.show();
-  setSelectedInstructor(instructor);
-};
+  const handleViewClick = (instructor) => {
+    const subjectRef = ref(db, `Instructors/${instructor.key}/Subjects`);
+    
+    get(subjectRef).then((subjectSnapshot) => {
+      const subjects = subjectSnapshot.val();
+      console.log("Subjects from Firebase:", subjects);
+  
+      if (subjects) {
+        const subjectArray = Object.entries(subjects).map(([key, value]) => ({
+          id: key,
+          ...value,
+        }));
+        console.log("Mapped Subject Array:", subjectArray);
+        setInstructorsSubjects(subjectArray);
+      } else {
+        console.log("No subjects available.");
+        setInstructorsSubjects([]);
+      }
+  
+      const view = new Modal(document.getElementById('view'));
+      view.show();
+      setSelectedInstructor(instructor);
+    });
+  };
+  
+
+
 const handleDeleteClick = (instructor) => {
+  setDeleteKey(instructor.key);
   setSelectedInstructor(instructor);
   const deleteModal = new Modal(document.getElementById('delete'));
   deleteModal.show();
+  setShowModal(deleteModal);
 };
 
-const handleDelete = () => {
-  const instructorId = selectedInstructor?.ID;
-
-  if (!instructorId) {
-    console.error("Invalid instructor ID");
+const deleteKey = async () => {
+  if (!DeleteKey) {
+    console.error('No instructor selected for deletion');
     return;
   }
 
-  const instructorRef = ref(db, `Instructors/${instructorId}`);
-  remove(instructorRef)
-    .then(() => {
-      console.log("Instructor deleted successfully");
-      setInstructors((prevInstructors) =>
-        prevInstructors.filter((instructor) => instructor.ID !== instructorId)
-      );
-      const deleteModal = new Modal(document.getElementById('delete'));
-      deleteModal.hide();
-    })
-    .catch((error) => {
-      console.error("Error deleting instructor:", error);
-    });
+  const deleteRef = ref(db, `Instructors/${DeleteKey}`);
+  console.log(DeleteKey);
+  console.log(deleteRef);
+
+  try {
+    await remove(deleteRef);
+    console.log('Instructor deleted successfully');
+    
+    if (showModal) {
+      showModal.hide();
+      const successDelete = new Modal(document.getElementById('successDelete'));
+      successDelete.show();
+      setTimeout(() => {
+        successDelete.hide();
+      }, 1500);
+    }
+  } catch (error) {
+    console.error('Error deleting instructor:', error);
+    const errorModal = new Modal(document.getElementById('error'));
+    const errorContent = document.getElementById('errorContent');
+    errorContent.textContent = `Error: ${error.message || 'Unknown error'}`;
+    errorModal.show();
+  }
 };
+const filteredInstructors = instructors.filter((instructor) =>
+instructor.Instructor.toLowerCase().includes(searchTerm.toLowerCase()),
+//instructor.Email.toLowerCase().includes(searchTerm.toLowerCase()),
+//instructor.ID.toLowerCase().includes(searchTerm.toLowerCase()),
+//instructor.Department.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 const subjects = (e) =>{
   nav('/subjects');
 }
@@ -138,13 +178,19 @@ const subjects = (e) =>{
           </ul>
         </div>
         <div className="">
-          <button className="btn btn-primary" onClick={newInstuctorModal}>
+          <button className="btn btn-primary mb-3" onClick={newInstuctorModal}>
             New+
           </button>
         </div>
         <div className="row" id="row">
           <div className="">
-            <table  className="table table-striped text-uppercase">
+            <div className="card">
+              <div className="card-header">
+                 <input placeholder="Search..." className="form-control" type="search" name="searchInstructor" id="" value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}/>
+              </div>
+              <div className="card-body">
+                <table  className="table table-striped text-uppercase">
               <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 }}>
                 <tr>
                   <th scope="col">ID</th>
@@ -156,34 +202,37 @@ const subjects = (e) =>{
                 </tr>
               </thead>
               <tbody>
-              {instructors.map((instructor) => (
-  <tr key={instructor.ID}>
-    <td>{instructor.ID}</td>
-    <td>{instructor.Instructor}</td>
-    <td>{instructor.Email}</td>
-    <td>{instructor.Department}</td>
-    <td>
-      <button
-        className="btn btn-primary"
-        onClick={() => handleViewClick(instructor)}
-      >
-        View Details
-      </button>
-    </td>
-    <td>
-      <button className="btn btn-success">Edit</button>
-      <button className="btn btn-danger" onClick={() => handleDeleteClick(instructor)}>
-        Delete
-      </button>
-    </td>
-  </tr>
-))}
+              {filteredInstructors.map((instructor)=>(
+                  <tr key={instructor.ID}>
+                    <td>{instructor.ID}</td>
+                    <td>{instructor.Instructor}</td>
+                    <td>{instructor.Email}</td>
+                    <td>{instructor.Department}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleViewClick(instructor)}
+                      >
+                        View Details
+                      </button>
+                    </td>
+                    <td>
+                      {/* <button className="btn btn-success">Edit</button> */}
+                      <button className="btn btn-danger" onClick={() => handleDeleteClick(instructor)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+              ))}
               </tbody>
             </table>
+              </div>
+            </div>
+            
           </div>
         </div>
       </div>
-      <div id="create" className="modal fade text-uppercase" tabIndex="-1" role="dialog">
+      <div id="create" className="modal fade text-uppercase" data-bs-backdrop="static" tabIndex="-1" role="dialog">
   <div className="modal-dialog modal-dialog-centered d-flex align-items-center justify-content-center">
     <div className="modal-content">
       <div className="modal-header">
@@ -241,6 +290,7 @@ const subjects = (e) =>{
         <option value="BSBA">BSBA</option>
         <option value="BSHM">BSHM</option>
         <option value="BTVTED">BTVTED</option>
+        <option value="Senior High">Senior High</option>
       </select>
     </form>
       </div>
@@ -257,34 +307,50 @@ const subjects = (e) =>{
 </div>
 
      <div id="view" className="modal fade" tabIndex="-1" role="dialog">
-  <div className="modal-dialog">
-    <div className="modal-content">
+  <div className="modal-dialog modal-xl">
+    <div className="modal-content" style={{width: 'fit-content'}}>
       <div className="modal-header">
-      <h5 className="modal-title">{selectedInstructor?.Instructor}</h5>
+      <h5 className="modal-title">{selectedInstructor?.Instructor}'s Schedule</h5>
         <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div className="modal-body text-light">
-        <div className="content" style={{ display: 'flex', flexDirection: 'column', fontWeight: '700', gap: '30px' }}>
-          <span className="text-dark">ID: {selectedInstructor?.ID}</span>
-          <span className="text-dark text-uppercase">Instructor: {selectedInstructor?.Instructor}</span>
-          <span className="text-dark">Email: {selectedInstructor?.Email}</span>
-          <span className="text-dark">Department: {selectedInstructor?.Department}</span>
-          <button
-            className="btn btn-primary"
-            type="button"
-            onClick={handleToggleCollapse}
-            data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"
-          >
-            View Schedule
-          </button>
-          <div className={`collapse ${isCollapsed ? 'show' : ''}`} id="collapseExample">
-            <div className="card card-body text-dark">
-              <table className="table table-stripped">
-              </table>
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer">
+      <div className="modal-body text-dark">
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Subject Code</th>
+              <th>Subject Description</th>
+              <th>Subject Schedule</th>
+              <th>Subject Semester</th>
+              <th>Subject Term</th>
+              <th>Subject Time</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          {InstructorSubjects && InstructorSubjects.length > 0 ? (
+    InstructorSubjects.map((subs) => (
+      <tr key={subs.id}>
+        <td>{subs.SubjectCode}</td>
+        <td>{subs.SubjectDescription}</td>
+        <td>{subs.SubjectSchedule}</td>
+        <td>{subs.SubjectSemester}</td>
+        <td>{subs.SubjectTerm}</td>
+        <td>{subs.SubjectTime}</td>
+        <td>
+          <button className="btn btn-success">Edit</button>
+          <button className="btn btn-danger">Delete</button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="6">No data available</td>
+    </tr>
+  )}
+          </tbody>
+        </table>
+        <div className="modal-footer mt-3">
+          <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -295,6 +361,15 @@ const subjects = (e) =>{
     <div className="modal-content">
       <div className="modal-body lead text-success">
         <center>New Instructor Added</center>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="successDelete" className="modal fade" tabIndex="-1" role="dialog">
+  <div className="modal-dialog">
+    <div className="modal-content">
+      <div className="modal-body lead text-success">
+        <center>Instructor Deleted</center>
       </div>
     </div>
   </div>
@@ -312,13 +387,13 @@ const subjects = (e) =>{
   <div className="modal-dialog">
     <div className="modal-content">
       <div className="modal-body text-dark lead">
-        Are you sure you want to delete {selectedInstructor?.Instructor}? <br /> Deleting the instructor's record will also delete the instructor's schedule
+        Are you sure you want to delete <b>{selectedInstructor?.Instructor}?</b> <br /> Deleting the instructor's record will also delete the instructor's schedule
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
           Close
         </button>
-        <button type="button" className="btn btn-danger" onClick={handleDelete}>
+        <button type="button" className="btn btn-danger" onClick={deleteKey}>
   Delete
 </button>
       </div>

@@ -200,6 +200,7 @@ export default function BSIT(){
     };
     
       const Instructor = (subject) => {
+        
         console.log('Clicked Subject:', subject.SubjectCode, subject.SubjectDescription, subject.SubjectSchedule, subject.SubjectTime);
         const instructorModal = new Modal(document.getElementById('instructors'));
         instructorModal.show();
@@ -207,17 +208,15 @@ export default function BSIT(){
       }
       const AssignSubject = (selectedInstructor) => {
         if (selectedInstructor) {
-          console.log('selected instructor', selectedInstructor.Instructor, selectedInstructor.key);
+          console.log('Selected instructor:', selectedInstructor.Instructor, selectedInstructor.key);
           setSelectedInstructor(selectedInstructor);
         } else {
-          console.error('Selected instructor is undefined.');
+          console.error('Selected instructor or subject is undefined.');
         }
       }
-      
     return(
-        <div className="container-fluid" id="subjects">
-                <div className="row">
-                  <div className="col-md-10 col-xl-6 col-lg-6 g-5">
+        <div className="" id="subjects">
+                  <div className="">
                     <div className="card">
                       <div className="card-header">
                       <div className="card-title">
@@ -269,7 +268,6 @@ export default function BSIT(){
                           New
                         </button>
                       </div>
-                    </div>
                     </div>
                     
                 </div>

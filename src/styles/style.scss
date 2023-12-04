@@ -141,6 +141,7 @@ body{
         }
 
         .card-body {
+            min-height: 500px;
             max-height: 500px;
             overflow: auto;
         }
@@ -177,7 +178,6 @@ and (max-width: 1605px)
 }
 @media only screen and (max-width: 960px) {
     #subjects {
-        background-color: red;
         #title{
             position: sticky;
                     z-index: 7;

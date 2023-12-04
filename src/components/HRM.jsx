@@ -5,6 +5,7 @@ import { db } from "../dbconfig/firebaseConfig";
 import "../styles/style.css";
 export default function BSHM(){
     const [formSubmitted, setFormSubmitted] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [subjectCode, setSubjectCode] = useState('');
     const [subjectDescription, setSubjectDescription] = useState('');
     const [subjectSemester, setSubjectSemester] = useState('');
@@ -18,10 +19,10 @@ export default function BSHM(){
     const [modal, setModal] = useState(null);
     const [modalDelete, setModalDelete] = useState(null);
     const [selectedInstructor, setSelectedInstructor] = useState(null);
-    const dbref = ref(db, "Subjects/BSIT");
+    const dbref = ref(db, "Subjects/HM");
     const ins = ref(db, 'Instructors/');
     useEffect(() => {
-      const bsitModal = new Modal(document.getElementById('BSIT'));
+      const bsitModal = new Modal(document.getElementById('BSHM'));
       bsitModal._element.addEventListener('hidden.bs.modal', () => {
           setSubjectCode('');
           setSubjectDescription('');
@@ -81,7 +82,7 @@ export default function BSHM(){
     };
   }, []);
     const BSIT = () => {
-        const bsit = new Modal(document.getElementById('BSIT'));
+        const bsit = new Modal(document.getElementById('BSHM'));
         bsit.show();
         setModal(bsit);
     }
@@ -123,14 +124,14 @@ export default function BSHM(){
           setFormSubmitted(false);
           if(modal){
             modal.hide();
-            const success = new Modal(document.getElementById('success'));
+            const success = new Modal(document.getElementById('successBSHM'));
             success.show();
             setTimeout(() => {
                 success.hide();
             }, 1500);
           }
       } catch (error) {
-          const err = new Modal(document.getElementById('error'));
+          const err = new Modal(document.getElementById('errorBSHM'));
           const errorContent = document.getElementById('errorContent');
           errorContent.textContent = `Error: ${error.message || 'Unknown error'}`;
           err.show();
@@ -138,13 +139,13 @@ export default function BSHM(){
   };
   
     const ViewInstructors = (subject) => {
-        const Instructors = new Modal(document.getElementById('Instructors'));
+        const Instructors = new Modal(document.getElementById('InstructorsBSHM'));
         Instructors.show();
         setInstructors(subject);
       };
       
       const ConfirmationModal = (subject) => {
-        const deleteModal = new Modal(document.getElementById('deleteModal'));
+        const deleteModal = new Modal(document.getElementById('deleteModalBSHM'));
         deleteModal.show();
         setInstructors(subject);
         setSubjectKey(subject.key);
@@ -154,14 +155,14 @@ export default function BSHM(){
             console.error("Subject key is not defined");
             return;
         }
-        const deleteModal = new Modal(document.getElementById('deleteModal'));
+        const deleteModal = new Modal(document.getElementById('deleteModalBSHM'));
         deleteModal.show();
         setModalDelete(deleteModal);
     
-        const subjectRef = ref(db, `Subjects/BSIT/${subjectKey}`);
+        const subjectRef = ref(db, `Subjects/HM/${subjectKey}`);
         remove(subjectRef)
             .then(() => {
-                const deleteInfo = document.getElementById('deleteID');
+                const deleteInfo = document.getElementById('errorBSHM');
                 deleteInfo.textContent = "Subject Deleted";
                 setTimeout(() => {
                   //see how fucked up my programming? dili ma close ang delete modal so i have to manually remove the back drop haha 
@@ -171,7 +172,7 @@ export default function BSHM(){
                         modalBackdrop.parentNode.removeChild(modalBackdrop);
                     }
                 }, 2000);
-                const successModal = new Modal(document.getElementById('successDelete'));
+                const successModal = new Modal(document.getElementById('successDeleteBSHM'));
                 successModal.show();
                 setTimeout(() => {
                     successModal.hide();
@@ -183,10 +184,10 @@ export default function BSHM(){
                 }, 1500);
             })
             .catch((error) => {
-                const deleteInfo = document.getElementById('deleteID');
+                const deleteInfo = document.getElementById('deleteIDBSHM');
                 deleteInfo.textContent = `Error: ${error.message || 'Unknown error'}`;
                 deleteModal.hide();
-                const errorModal = new Modal(document.getElementById('error'));
+                const errorModal = new Modal(document.getElementById('errorBSHM'));
                 errorModal.show();
                 setTimeout(() => {
                     errorModal.hide();
@@ -201,67 +202,137 @@ export default function BSHM(){
     
       const Instructor = (subject) => {
         console.log('Clicked Subject:', subject.SubjectCode, subject.SubjectDescription, subject.SubjectSchedule, subject.SubjectTime);
-        const instructorModal = new Modal(document.getElementById('instructors'));
+        const instructorModal = new Modal(document.getElementById('instructorsBSHM'));
         instructorModal.show();
         setInstructors(subject);
+        setModal(instructorModal);
       }
-      const AssignSubject = (selectedInstructor) => {
-        if (selectedInstructor) {
-          console.log('selected instructor', selectedInstructor.Instructor, selectedInstructor.key);
+      const AssignSubject = async (selectedInstructor) => {
+        //console.log(selectedInstructor.key);
+        //console.log(intructors?.SubjectCode, intructors?.SubjectDescription, intructors?.SubjectSchedule, intructors?.SubjectTime);
+
           setSelectedInstructor(selectedInstructor);
-        } else {
-          console.error('Selected instructor is undefined.');
+        try {
+          const pushSubjectRef = ref(db, `Instructors/${selectedInstructor.key}/Subjects`);
+          if(selectedInstructor){
+            await push(pushSubjectRef ,{
+              SubjectCode: intructors?.SubjectCode,
+              SubjectDescription: intructors?.SubjectDescription,
+              SubjectSemester: intructors?.SubjectSemester,
+              SubjectTerm: intructors?.SubjectTerm,
+              SubjectSchedule: intructors?.SubjectSchedule,
+              SubjectTime: intructors?.SubjectTime,
+              Reason: ''
+            }).then((e)=>
+            {
+              const assignment = new Modal(document.getElementById('AssignmentHM'));
+              assignment.show();
+              if(modal){
+                  modal.hide();
+              }
+              setTimeout(() => {
+                assignment.hide();
+              }, 1500);
+            })
+            .catch((eror)=>{
+              console.error(eror);
+              const deleteInfo = document.getElementById('deleteID');
+              deleteInfo.textContent = `Error: ${eror.message || 'Unknown error'}`;
+              const errorModal = new Modal(document.getElementById('errorBSHM'));
+                errorModal.show();
+            })
+          }else{
+            
+          }
+        } catch (error) {
+          console.error(error);
+              const deleteInfo = document.getElementById('deleteID');
+              deleteInfo.textContent = `Error: ${error.message || 'Unknown error'}`;
+              const errorModal = new Modal(document.getElementById('errorBSHM'));
+                errorModal.show();
         }
-      }
-      
+       
+      };
+      const filteredSubjects = subjects.filter(
+        subject =>
+          subject.SubjectCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.SubjectDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.SubjectSemester.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.SubjectTerm.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.SubjectSchedule.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          subject.SubjectTime.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     return(
-        <div className="container-fluid" id="subjects">
-                <div className="row">
-                  <div className="col-md-10 col-xl-6 col-lg-6 g-5">
+        <div className="" id="subjects">
+                  <div className="">
                     <div className="card">
                       <div className="card-header">
                       <div className="card-title">
                         <span>
                           <b>HRM</b>
                         </span>
+                        <input className="mx-3 form-control" type="search" name="" id="" placeholder="Search..." value={searchTerm} onChange={e=>{setSearchTerm(e.target.value)}}/>
                       </div>
                       </div>
                       <div className="card-body">
-                            <table className="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Subject Code</th>
-                                        <th>Subject Description</th>
-                                        <th>Subject Semester</th>
-                                        <th>Subject Term</th>
-                                        <th>Subject Schedule</th>
-                                        <th style={{paddingLeft: '50px', paddingRight: '70px'}}>Subject Time</th>
-                                        <th className="actions">Actions</th>
+                      <table className="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>Subject Code</th>
+                                  <th>Subject Description</th>
+                                  <th>Subject Semester</th>
+                                  <th>Subject Term</th>
+                                  <th>Subject Schedule</th>
+                                  <th style={{ paddingLeft: '50px', paddingRight: '70px' }}>Subject Time</th>
+                                  <th className="actions">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filteredSubjects.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="7" className="no-data">
+                                      No matching data
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  filteredSubjects.map(subject => (
+                                    <tr key={subject.key} id="td">
+                                      <td>{subject.SubjectCode}</td>
+                                      <td>{subject.SubjectDescription}</td>
+                                      <td>{subject.SubjectSemester}</td>
+                                      <td>{subject.SubjectTerm}</td>
+                                      <td>{subject.SubjectSchedule}</td>
+                                      <td>{subject.SubjectTime}</td>
+                                      <td className="button">
+                                        <button
+                                          className="btn btn-success text-light mx-3"
+                                          onClick={() => {
+                                            Instructor(subject);
+                                          }}
+                                        >
+                                          Assign
+                                        </button>
+                                        <button
+                                          className="btn btn-primary"
+                                          onClick={() => {
+                                            ViewInstructors(subject);
+                                          }}
+                                        >
+                                          View
+                                        </button>
+                                        <button
+                                          className="btn btn-danger mx-3"
+                                          onClick={() => {
+                                            ConfirmationModal(subject);
+                                          }}
+                                        >
+                                          Delete
+                                        </button>
+                                      </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {subjects.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="7" className="no-data">No data</td>
-                                        </tr>
-                                    ) : (
-                                        subjects.map((subject) => (
-                                            <tr key={subject.key} id="td">
-                                                <td>{subject.SubjectCode}</td>
-                                                <td>{subject.SubjectDescription}</td>
-                                                <td>{subject.SubjectSemester}</td>
-                                                <td>{subject.SubjectTerm}</td>
-                                                <td>{subject.SubjectSchedule}</td>
-                                                <td>{subject.SubjectTime}</td>
-                                                <td className="button">
-                                                    <button className="btn btn-success text-light mx-3" onClick={() => { Instructor(subject) }}>Assign</button>
-                                                    <button className="btn btn-primary" onClick={() => { ViewInstructors(subject) }}>View</button>
-                                                    <button className="btn btn-danger mx-3" onClick={() => { ConfirmationModal(subject) }}>Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
+                                  ))
+                                )}
+                              </tbody>
                             </table>
                         </div>
                       <div className="card-footer">
@@ -270,10 +341,9 @@ export default function BSHM(){
                         </button>
                       </div>
                     </div>
-                    </div>
                     
                 </div>
-                <div id="BSIT" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="BSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                       <div className="modal-header">
@@ -336,7 +406,7 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="success" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="successBSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog">
                     <div className="modal-content">
                       <div className="modal-body text-success">
@@ -345,7 +415,7 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="successDelete" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="successDeleteBSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog">
                     <div className="modal-content">
                       <div className="modal-body text-success">
@@ -354,7 +424,16 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="error" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="AssignmentHM" className="modal fade" tabIndex="-1" role="dialog">
+                  <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                      <div className="modal-body text-success">
+                        <center className="text-success h4">Subject Assigned</center>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="errorBSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog">
                     <div className="modal-content">
                       <div className="modal-body text-success">
@@ -363,7 +442,7 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="Instructors" className="modal fade p-5" tabIndex="-1" role="dialog">
+                <div id="InstructorsBSHM" className="modal fade p-5" tabIndex="-1" role="dialog">
                   <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -393,7 +472,7 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="deleteModal" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="deleteModalBSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content" style={{width: 'fit-content'}}>
                       <div className="modal-body text-success">
@@ -430,7 +509,7 @@ export default function BSHM(){
                     </div>
                   </div>
                 </div>
-                <div id="instructors" className="modal fade" tabIndex="-1" role="dialog">
+                <div id="instructorsBSHM" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog modal-dialog-scrollable">
                     <div className="modal-content" style={{width: 'fit-content'}}>
                       <div className="modal-header">
@@ -448,21 +527,26 @@ export default function BSHM(){
                               </tr>
                             </thead>
                             <tbody>
-                              {departmens.map((ins) => {
-                                if (ins.Department === 'BSIT') {
-                                  return (
+                            {
+                              departmens.some(ins => ins.Department === 'BSHM') ? (
+                                departmens
+                                  .filter(ins => ins.Department === 'BSHM')
+                                  .map(ins => (
                                     <tr key={ins.key}>
                                       <td>{ins.Instructor}</td>
                                       <td>{ins.Email}</td>
                                       <td>{ins.Department}</td>
                                       <td>
-                                      <button className="btn btn-success text-light mx-3" onClick={() => AssignSubject(ins)}>Assign</button>
+                                        <button className="btn btn-success text-light mx-3" onClick={() => AssignSubject(ins)}>Assign</button>
                                       </td>
                                     </tr>
-                                  );
-                                }
-                                return null;
-                              })}
+                                  ))
+                              ) : (
+                                <tr>
+                                  <td colSpan="4">No instructors in the BSHM/HRM department</td>
+                                </tr>
+                              )
+                            }
                             </tbody>
                           </table>
                         </center>

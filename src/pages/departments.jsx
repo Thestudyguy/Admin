@@ -7,8 +7,8 @@ import SeniorHigh from "../components/SeniorHigh";
 import BSIT from "../components/BSIT";
 export default function Departments(){
     return(
-        <div className="container-fluid" id="subjects">
-            <div className="row">
+        <div className="container-fluid" id="subjects" >
+            <div className="row" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
             <BSIT></BSIT>
             <BSBA></BSBA>
             <BSCRIM></BSCRIM>

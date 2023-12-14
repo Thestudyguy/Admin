@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "bootstrap";
-import { ref, push, onValue, remove } from "firebase/database";
+import { ref, push, onValue, remove, get, child, update } from "firebase/database";
 import { db } from "../dbconfig/firebaseConfig";
 import "../styles/style.css";
-import BSBA from "../components/BSBA";
-import BSCRIM from "../components/BSCRIM";
-import BSHM from "../components/HRM";
-import BSTVTED from "../components/BTVTED";
-import SeniorHigh from "../components/SeniorHigh";
 export default function BSIT(){
     const [searchTerm, setSearchTerm] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
@@ -21,9 +16,11 @@ export default function BSIT(){
     const [departmens, setDepartment] = useState([]);
     const [subjectSchedule, setsubjectSchedule] = useState('');
     const [subjectTime, setsubjecTime] = useState('');
+    const [subjectComment, setsubjecComment] = useState('');
     const [modal, setModal] = useState(null);
     const [modalDelete, setModalDelete] = useState(null);
     const [selectedInstructor, setSelectedInstructor] = useState(null);
+    const [subjectEdit, setSubjectEdit] = useState(null);
     const dbref = ref(db, "Subjects/BSIT");
     const ins = ref(db, 'Instructors/');
     useEffect(() => {
@@ -94,7 +91,7 @@ export default function BSIT(){
     
     const Submit = async (e) => {
       e.preventDefault();
-      
+      setSubjectKey(e);
       if (
           subjectTime.trim() === '' ||
           subjectSchedule.trim() === '' ||
@@ -117,15 +114,17 @@ export default function BSIT(){
               SubjectSemester: subjectSemester,
               SubjectTerm: subjectTerm,
               SubjectSchedule: subjectSchedule,
-              SubjectTime: subjectTime
+              SubjectTime: subjectTime,
+              SubjectComments: subjectComment,
+              PostponeReason: ''
           });
-  
           setSubjectCode('');
           setSubjectDescription('');
           setSubjectSemester('');
           setSubjectTerm('');
           setsubjectSchedule('');
           setsubjecTime('');
+          setsubjecComment('');
           setFormSubmitted(false);
           if(modal){
             modal.hide();
@@ -143,12 +142,6 @@ export default function BSIT(){
       }
   };
   
-    const ViewInstructors = (subject) => {
-        const Instructors = new Modal(document.getElementById('Instructors'));
-        Instructors.show();
-        setInstructors(subject);
-      };
-      
       const ConfirmationModal = (subject) => {
         const deleteModal = new Modal(document.getElementById('deleteModal'));
         deleteModal.show();
@@ -226,7 +219,7 @@ export default function BSIT(){
               SubjectTerm: intructors?.SubjectTerm,
               SubjectSchedule: intructors?.SubjectSchedule,
               SubjectTime: intructors?.SubjectTime,
-              Reason: ''
+              Reason: null
             }).then((e)=>
             {
               const assignment = new Modal(document.getElementById('Assignment'));
@@ -256,10 +249,17 @@ export default function BSIT(){
           subject.SubjectSchedule.toLowerCase().includes(searchTerm.toLowerCase()) ||
           subject.SubjectTime.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      const editSubject = (subjectToEdit) => {
+        const edit = new Modal(document.getElementById('subjectEdit'));
+        edit.show();
+        setSubjectEdit(subjectToEdit);
+        console.log(subjectEdit);
+      }
+      
     return(
         <div className="container-fluid px-2 p-5" id="subjects">
-                <div className="row g-5">
-                  <div className="col-md-10 col-xl-6 col-lg-6">
+                <div className="row g-5" style={{display: 'flex', flexDirection:'column'}}>
+                  <div className="col">
                   <div className="card">
                       <div className="card-header">
                       <div className="card-title">
@@ -279,17 +279,12 @@ export default function BSIT(){
                                   <th>Subject Term</th>
                                   <th>Subject Schedule</th>
                                   <th style={{ paddingLeft: '50px', paddingRight: '70px' }}>Subject Time</th>
+                                  <th>Subject Comments</th>
                                   <th className="actions">Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {filteredSubjects.length === 0 ? (
-                                  <tr>
-                                    <td colSpan="7" className="no-data">
-                                      No matching data
-                                    </td>
-                                  </tr>
-                                ) : (
+                                {(
                                   filteredSubjects.map(subject => (
                                     <tr key={subject.key} id="td">
                                       <td>{subject.SubjectCode}</td>
@@ -298,6 +293,7 @@ export default function BSIT(){
                                       <td>{subject.SubjectTerm}</td>
                                       <td>{subject.SubjectSchedule}</td>
                                       <td>{subject.SubjectTime}</td>
+                                      <td className="comment-cell" style={{ maxWidth: '250px', maxHeight: '90px', overflowY: 'auto', fontSize: '14px' }}>{subject.SubjectComments}</td>
                                       <td className="button">
                                         <button
                                           className="btn btn-success text-light mx-3"
@@ -307,14 +303,9 @@ export default function BSIT(){
                                         >
                                           Assign
                                         </button>
-                                        <button
-                                          className="btn btn-primary"
-                                          onClick={() => {
-                                            ViewInstructors(subject);
-                                          }}
-                                        >
-                                          View
-                                        </button>
+                                        <button className="btn btn-primary" onClick={() => {
+                                            editSubject(subject);
+                                          }}>Edit</button>
                                         <button
                                           className="btn btn-danger mx-3"
                                           onClick={() => {
@@ -336,21 +327,6 @@ export default function BSIT(){
                         </button>
                       </div>
                     </div>
-                    </div>
-                    <div className="col-md-10 col-xl-6 col-lg-6">
-                    <BSBA></BSBA>
-                    </div>
-                    <div className="col-md-10 col-xl-6 col-lg-6">
-                    <BSCRIM></BSCRIM>
-                    </div>
-                    <div className="col-md-10 col-xl-6 col-lg-6">
-                    <BSTVTED></BSTVTED>
-                    </div>
-                    <div className="col-md-10 col-xl-6 col-lg-6">
-                    <BSHM></BSHM>
-                    </div>
-                    <div className="col-md-10 col-xl-6 col-lg-6">
-                    <SeniorHigh></SeniorHigh>
                     </div>
                    
                 </div>
@@ -383,6 +359,8 @@ export default function BSIT(){
                           <option value="Thursday">Thursday</option>
                           <option value="Friday">Friday</option>
                           <option value="Saturday">Saturday</option>
+                          <option value="Monday-Wednsday-Friday">Monday-Wednsday-Friday</option>
+                          <option value="Monday-Tuesday">Monday-Tuesday</option>
                         </select>
                         {/**
                         <input className={`form-control my-3 ${formSubmitted && subjectTime.trim() === '' || formSubmitted &&  subjectTime.trim() === '00:00 AM - 00:00 AM' || formSubmitted &&  subjectTime.trim() === '00:00 PM - 00:00 PM' ? 'border border-danger': ''}`} value={subjectTime} onChange={handleChange} type="text" name="" placeholder="Type Time e.g 8:00 AM - 10:00 AM" id="" />
@@ -405,6 +383,9 @@ export default function BSIT(){
                           <option value="8:00 AM - 12:00 PM">8:00 AM - 12:00 PM</option>
                           <option value="1:00 PM - 5:00 PM">1:00 PM - 5:00 PM</option>
                         </select>
+                        <hr />
+                        <label htmlFor="comment">Optional</label>
+                        <input type="text" className="form-control" name="comment" placeholder="Subject Comment" value={subjectComment} onChange={(e)=>setsubjecComment(e.target.value)} id="" />
                       </form>
                       <div className="modal-footer">
                         <button className="btn btn-secondary" data-bs-dismiss="modal">
@@ -453,33 +434,19 @@ export default function BSIT(){
                     </div>
                   </div>
                 </div>
-                <div id="Instructors" className="modal fade p-5" tabIndex="-1" role="dialog">
+                <div id="subjectEdit" className="modal fade p-5" tabIndex="-1" role="dialog">
                   <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <div className="modal-title h5">Subject: {intructors?.SubjectCode}</div>
+                            <div className="modal-title h5">Edit Subject:</div>
                         </div>
-                      <div className="modal-body text-success">
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <td scope="col">Subject Code</td>
-                                    <td scope="col">Subject Desciption</td>
-                                    <td scope="col">Subject Semester</td>
-                                    <td scope="col">Subject Term</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td scope="col"><b>{intructors?.SubjectCode}</b></td>
-                                    <td scope="col"><b>{intructors?.SubjectDescription}</b></td>
-                                    <td scope="col"><b>{intructors?.SubjectSemester}</b></td>
-                                    <td scope="col"><b>{intructors?.SubjectTerm}</b></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                      <div className="modal-body">
+                       
                       </div>
-                    <div className="modal-footer"><button className="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+                    <div className="modal-footer">
+                      <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button className="btn btn-success">Save Changes</button>
+                    </div>
                     </div>
                   </div>
                 </div>

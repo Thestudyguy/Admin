@@ -112,7 +112,9 @@ export default function BSTVTED(){
               SubjectSemester: subjectSemester,
               SubjectTerm: subjectTerm,
               SubjectSchedule: subjectSchedule,
-              SubjectTime: subjectTime
+              SubjectTime: subjectTime,
+              Comments: '',
+              PostponeReason: ''
           });
   
           setSubjectCode('');
@@ -222,7 +224,8 @@ export default function BSTVTED(){
               SubjectTerm: intructors?.SubjectTerm,
               SubjectSchedule: intructors?.SubjectSchedule,
               SubjectTime: intructors?.SubjectTime,
-              Reason: ''
+              Reason: '',
+              Comments: ''
             }).then((e)=>
             {
               const assignment = new Modal(document.getElementById('AssignmentBTVTED'));

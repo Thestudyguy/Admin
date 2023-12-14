@@ -107,7 +107,7 @@ body {
   gap: 15px;
 }
 #dashboard #row {
-  max-height: 700px;
+  max-height: 500px;
   overflow: auto;
 }
 
@@ -134,7 +134,6 @@ body {
   bottom: 0;
 }
 #subjects .card .card-body {
-  min-height: 500px;
   max-height: 500px;
   overflow: auto;
 }

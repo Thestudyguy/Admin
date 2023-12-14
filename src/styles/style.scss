@@ -110,7 +110,7 @@ body{
         }
     }
     #row{
-        max-height: 700px;
+        max-height: 500px;
         overflow: auto;
     }
 }
@@ -141,7 +141,6 @@ body{
         }
 
         .card-body {
-            min-height: 500px;
             max-height: 500px;
             overflow: auto;
         }

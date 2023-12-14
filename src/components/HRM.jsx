@@ -112,7 +112,9 @@ export default function BSHM(){
               SubjectSemester: subjectSemester,
               SubjectTerm: subjectTerm,
               SubjectSchedule: subjectSchedule,
-              SubjectTime: subjectTime
+              SubjectTime: subjectTime,
+              Comments: '',
+              PostponeReason: ''
           });
   
           setSubjectCode('');

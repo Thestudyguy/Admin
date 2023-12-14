@@ -9,6 +9,8 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(null);
   const [name, Setname] = useState('');
   const [email, Setemail] = useState('');
+  const [username, Setusername] = useState('');
+  const [password, SetPassword] = useState('');
   const [randomNumber, setRandomNumber] = useState(null);
   const [department, setDepartment] = useState('');
   const [instructors, setInstructors] = useState([]);
@@ -51,7 +53,7 @@ useEffect(() => {
   };
 
   const pushdata = async () => {
-    if (name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
+    if (username.trim() === '' || password.trim() === '' || name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
       setFormSubmitted(true);
       return;
     }
@@ -61,12 +63,16 @@ useEffect(() => {
       Instructor: name,
       Email: email,
       Department: department,
+      UserName: username,
+      Password: password
     })
       .then(() => {
         setRandomNumber(null);
         Setname('');
         Setemail('');
         setDepartment('');
+        Setusername('');
+        SetPassword('');
         setFormSubmitted(false);
         if (showModal) {
           showModal.hide();
@@ -93,7 +99,7 @@ useEffect(() => {
 
   const handleViewClick = (instructor) => {
     const subjectRef = ref(db, `Instructors/${instructor.key}/Subjects`);
-    
+    console.log(instructor.Instructor);
     get(subjectRef).then((subjectSnapshot) => {
       const subjects = subjectSnapshot.val();
       console.log("Subjects from Firebase:", subjects);
@@ -166,13 +172,16 @@ instructor.Instructor.toLowerCase().includes(searchTerm.toLowerCase()),
 const subjects = (e) =>{
   nav('/subjects');
 }
+const StudentsAccounts = (e) =>{
+  nav('/StudentsAccounts');
+}
   return (
     <div className="bg-success container-fluid p-5" id="dashboard">
       <div className="col">
         <div className="row">
           <ul>
-            <li>Accounts</li>
-            <li><button className="btn btn-transparent text-dark" onClick={subjects}>Subjects</button></li>
+            <li><button className="btn btn-transparent" onClick={StudentsAccounts}>Students Accounts</button></li>
+            <li><button className="btn btn-transparent text-dark" onClick={subjects}>BSIT</button></li>
             <li>Accounts</li>
             <li>Accounts</li>
           </ul>
@@ -186,7 +195,7 @@ const subjects = (e) =>{
           <div className="">
             <div className="card">
               <div className="card-header">
-                 <input placeholder="Search..." className="form-control" type="search" name="searchInstructor" id="" value={searchTerm}
+                 <input placeholder="Search..." className="form-control" type="search" name="searchInstructor" id="search" value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}/>
               </div>
               <div className="card-body">
@@ -266,7 +275,7 @@ const subjects = (e) =>{
       />
 
       <input
-        type="text"
+        type="email"
         className={`form-control ${formSubmitted && email.trim() === '' ? 'border border-danger' : ''} mt-3`}
         name="email"
         id=""
@@ -292,6 +301,26 @@ const subjects = (e) =>{
         <option value="BTVTED">BTVTED</option>
         <option value="Senior High">Senior High</option>
       </select>
+      <hr />
+      <label htmlFor="" className="text-dark">T-mobile Account</label>
+      <input
+        type="text"
+        className={`form-control ${formSubmitted && username.trim() === '' ? 'border border-danger' : ''} mt-3`}
+        name="username"
+        id=""
+        placeholder="Username"
+        value={username}
+        onChange={(e) => Setusername(e.target.value)}
+      />
+      <input
+        type="text"
+        className={`form-control ${formSubmitted && password.trim() === '' ? 'border border-danger' : ''} mt-3`}
+        name="password"
+        id=""
+        placeholder="Password"
+        value={password}
+        onChange={(e) => SetPassword(e.target.value)}
+      />
     </form>
       </div>
       <div className="modal-footer">
@@ -307,7 +336,7 @@ const subjects = (e) =>{
 </div>
 
      <div id="view" className="modal fade" tabIndex="-1" role="dialog">
-  <div className="modal-dialog modal-xl">
+  <div className="modal-dialog modal-dialog-centered modal-xl">
     <div className="modal-content" style={{width: 'fit-content'}}>
       <div className="modal-header">
       <h5 className="modal-title">{selectedInstructor?.Instructor}'s Schedule</h5>
@@ -384,7 +413,7 @@ const subjects = (e) =>{
   </div>
 </div>
 <div id="delete" className="modal fade" tabIndex="-1" role="dialog">
-  <div className="modal-dialog">
+  <div className="modal-dialog modal-dialog-centered">
     <div className="modal-content">
       <div className="modal-body text-dark lead">
         Are you sure you want to delete <b>{selectedInstructor?.Instructor}?</b> <br /> Deleting the instructor's record will also delete the instructor's schedule

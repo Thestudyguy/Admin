@@ -81,6 +81,10 @@ body{
 }
 #dashboard{
     height: 100vh;
+    .card-body{
+        max-height: 400px;
+        overflow-y: auto;
+    }
     .col{
         .row:first-child{
             ul{
@@ -109,19 +113,11 @@ body{
             gap: 15px;
         }
     }
-    #row{
-        max-height: 500px;
-        overflow: auto;
-    }
+
 }
 
 #subjects {
     #deleteModal{
-        .modal-content{
-            width: fit-content;
-        }
-    }
-    #Instructors{
         .modal-content{
             width: fit-content;
         }
@@ -141,7 +137,7 @@ body{
         }
 
         .card-body {
-            max-height: 500px;
+            max-height: 400px;
             overflow: auto;
         }
         .button{

@@ -175,15 +175,33 @@ const subjects = (e) =>{
 const StudentsAccounts = (e) =>{
   nav('/StudentsAccounts');
 }
+const bsba = (e) =>{
+ nav('/bsba'); 
+}
+const bshm = (e) =>{
+  nav('/bshm'); 
+ }
+ const bscrim = (e) =>{
+  nav('/crim'); 
+ }
+ const btvted = (e) =>{
+  nav('/btvted'); 
+ }
+ const seniorhigh = (e) =>{
+  nav('/seniorhigh'); 
+ }
   return (
     <div className="bg-success container-fluid p-5" id="dashboard">
       <div className="col">
         <div className="row">
           <ul>
             <li><button className="btn btn-transparent" onClick={StudentsAccounts}>Students Accounts</button></li>
-            <li><button className="btn btn-transparent text-dark" onClick={subjects}>BSIT</button></li>
-            <li>Accounts</li>
-            <li>Accounts</li>
+            <li><button className="btn btn-success text-dark" onClick={subjects}>BSIT</button></li>
+            <li><button className="btn btn-success text-dark" onClick={bsba}>BSBA</button></li>
+            <li><button className="btn btn-success text-dark" onClick={bshm}>BSHM/HRM</button></li>
+            <li><button className="btn btn-success text-dark" onClick={bscrim}>BSCRIM</button></li>
+            <li><button className="btn btn-success text-dark" onClick={btvted}>BTVTED</button></li>
+            <li><button className="btn btn-success text-dark" onClick={seniorhigh}>Senior High</button></li>
           </ul>
         </div>
         <div className="">
@@ -200,7 +218,7 @@ const StudentsAccounts = (e) =>{
               </div>
               <div className="card-body">
                 <table  className="table table-striped text-uppercase">
-              <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 }}>
+              <thead>
                 <tr>
                   <th scope="col">ID</th>
                   <th scope="col">Instructor</th>
@@ -336,7 +354,7 @@ const StudentsAccounts = (e) =>{
 </div>
 
      <div id="view" className="modal fade" tabIndex="-1" role="dialog">
-  <div className="modal-dialog modal-dialog-centered modal-xl">
+  <div className="modal-dialog modal-dialog-centered modal-lg">
     <div className="modal-content" style={{width: 'fit-content'}}>
       <div className="modal-header">
       <h5 className="modal-title">{selectedInstructor?.Instructor}'s Schedule</h5>

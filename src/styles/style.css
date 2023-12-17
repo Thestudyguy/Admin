@@ -84,6 +84,10 @@ body {
 #dashboard {
   height: 100vh;
 }
+#dashboard .card-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
 #dashboard .col .row:first-child ul {
   display: flex;
   flex-direction: row;
@@ -106,16 +110,8 @@ body {
   height: 35px;
   gap: 15px;
 }
-#dashboard #row {
-  max-height: 500px;
-  overflow: auto;
-}
 
 #subjects #deleteModal .modal-content {
-  width: -moz-fit-content;
-  width: fit-content;
-}
-#subjects #Instructors .modal-content {
   width: -moz-fit-content;
   width: fit-content;
 }
@@ -134,7 +130,7 @@ body {
   bottom: 0;
 }
 #subjects .card .card-body {
-  max-height: 500px;
+  max-height: 400px;
   overflow: auto;
 }
 #subjects .card .button {

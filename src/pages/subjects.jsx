@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "bootstrap";
-import { ref, push, onValue, remove, get, child, update } from "firebase/database";
+import { ref, push, onValue, remove, get, child, update, set } from "firebase/database";
 import { db } from "../dbconfig/firebaseConfig";
 import "../styles/style.css";
 export default function BSIT(){
@@ -11,7 +11,24 @@ export default function BSIT(){
     const [subjectSemester, setSubjectSemester] = useState('');
     const [subjectTerm, setSubjectTerm] = useState('');
     const [subjects, setSubjects] = useState([]);
-    const [intructors, setInstructors] = useState(null);
+    const [intructors, setInstructors] = useState({
+      subjectkey: null,
+      subjectcode: '',
+      subjectdescription: '',
+      subjectsemester: '',
+      subjectterm: '',
+      subjectschedule: '',
+      subjecttime: '',
+      subjectcomments: '',
+      postponereason: ''
+    });
+    const handleChange = (event) => {
+      const { name, value } = event.target;
+      setInstructors((prevState) => ({
+        ...prevState,
+        [name]: value
+      }));
+    };
     const [subjectKey, setSubjectKey] = useState(null);
     const [departmens, setDepartment] = useState([]);
     const [subjectSchedule, setsubjectSchedule] = useState('');
@@ -53,14 +70,11 @@ export default function BSIT(){
         }
       });
     };
-
     fetchData();
-
     return () => {
       onValue(dbref, () => {});
     };
   }, []);
-  
   useEffect(() => {
     const fetchData = () => {
       onValue(ins, (snapshot) => {
@@ -76,9 +90,7 @@ export default function BSIT(){
         }
       });
     };
-    
     fetchData();
-
     return () => {
       onValue(ins, () => {});
     };
@@ -88,7 +100,6 @@ export default function BSIT(){
         bsit.show();
         setModal(bsit);
     }
-    
     const Submit = async (e) => {
       e.preventDefault();
       setSubjectKey(e);
@@ -106,7 +117,6 @@ export default function BSIT(){
           }, 1500);
           return;
       }
-  
       try {
           await push(dbref, {
               SubjectCode: subjectCode,
@@ -115,7 +125,6 @@ export default function BSIT(){
               SubjectTerm: subjectTerm,
               SubjectSchedule: subjectSchedule,
               SubjectTime: subjectTime,
-              SubjectComments: subjectComment,
               PostponeReason: ''
           });
           setSubjectCode('');
@@ -141,7 +150,6 @@ export default function BSIT(){
           err.show();
       }
   };
-  
       const ConfirmationModal = (subject) => {
         const deleteModal = new Modal(document.getElementById('deleteModal'));
         deleteModal.show();
@@ -156,14 +164,25 @@ export default function BSIT(){
         const deleteModal = new Modal(document.getElementById('deleteModal'));
         deleteModal.show();
         setModalDelete(deleteModal);
-    
         const subjectRef = ref(db, `Subjects/BSIT/${subjectKey}`);
+        //const subjectRefinstructor = ref(db, `Instructors/${subjectKey}`);
         remove(subjectRef)
             .then(() => {
-                const deleteInfo = document.getElementById('deleteID');
-                deleteInfo.textContent = "Subject Deleted";
+              const instructorsRef = ref(db, `Instructors`);
+                get(instructorsRef).then((snapshot) => {
+                  snapshot.forEach((instructor) => {
+                    const instructorRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
+                    remove(instructorRef)
+                      .then(() => {
+                        console.log(`Subject ${subjectKey} deleted from instructor ${instructor.key}`);
+                      })
+                      .catch((error) => {
+                        console.error(`Error deleting subject ${subjectKey} from instructor ${instructor.key}:`, error);
+                      });
+                  });
+                });
                 setTimeout(() => {
-                  //see how fucked up my programming? dili ma close ang delete modal so i have to manually remove the back drop haha 
+                  //dili ma close ang delete modal so i have to manually remove the back drop haha 
                     deleteModal.hide();
                     const modalBackdrop = document.querySelector('.modal-backdrop');
                     if (modalBackdrop) {
@@ -178,7 +197,6 @@ export default function BSIT(){
                     if (modalBackdrop) {
                         modalBackdrop.parentNode.removeChild(modalBackdrop);
                     }
-    
                 }, 1500);
             })
             .catch((error) => {
@@ -193,26 +211,23 @@ export default function BSIT(){
                     if (modalBackdrop) {
                         modalBackdrop.parentNode.removeChild(modalBackdrop);
                     }
-    
                 }, 1500);
             });
     };
-    
       const Instructor = (subject) => {
         console.log('Clicked Subject:', subject.SubjectCode, subject.SubjectDescription, subject.SubjectSchedule, subject.SubjectTime);
         const instructorModal = new Modal(document.getElementById('instructors'));
         instructorModal.show();
         setModal(instructorModal);
         setInstructors(subject);
+        setSubjectKey(subject.key);
       }
       const AssignSubject = async (selectedInstructor) => {
-        //console.log(selectedInstructor.key);
-        //console.log(intructors?.SubjectCode, intructors?.SubjectDescription, intructors?.SubjectSchedule, intructors?.SubjectTime);
           setSelectedInstructor(selectedInstructor);
         try {
-          const pushSubjectRef = ref(db, `Instructors/${selectedInstructor.key}/Subjects`);
+          const pushSubjectRef = ref(db, `Instructors/${selectedInstructor.key}/Subjects/${subjectKey}`);
           if(selectedInstructor){
-            await push(pushSubjectRef ,{
+            await set(pushSubjectRef ,{
               SubjectCode: intructors?.SubjectCode,
               SubjectDescription: intructors?.SubjectDescription,
               SubjectSemester: intructors?.SubjectSemester,
@@ -233,12 +248,9 @@ export default function BSIT(){
             })
             .catch((eror)=>{console.error(eror);})
           }else{
-            
           }
         } catch (error) {
-          
         }
-       
       };
       const filteredSubjects = subjects.filter(
         subject =>
@@ -249,16 +261,71 @@ export default function BSIT(){
           subject.SubjectSchedule.toLowerCase().includes(searchTerm.toLowerCase()) ||
           subject.SubjectTime.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      const editSubject = (subjectToEdit) => {
-        const edit = new Modal(document.getElementById('subjectEdit'));
-        edit.show();
-        setSubjectEdit(subjectToEdit);
-        console.log(subjectEdit);
+      const editSubject = (subject) => {
+        const Instructors = new Modal(document.getElementById('Instructors'));
+        Instructors.show();
+        setModal(Instructors);
+        setInstructors({
+          subjectKey: subject.key,
+          subjectcode: subject.SubjectCode,
+          subjectdescription: subject.SubjectDescription,
+          subjectsemester: subject.SubjectSemester,
+          subjectterm: subject.SubjectTerm,
+          subjectschedule: subject.SubjectSchedule,
+          subjectcomments: subject.SubjectComments,
+          subjecttime: subject.SubjectTime
+        });
+        setSubjectKey(subject.key);
       }
+      const handleEdit = async () => {
+        const dbEditRef = ref(db, `Subjects/BSIT/${subjectKey}`);
+        const {
+          subjectcode,
+          subjectdescription,
+          subjectsemester,
+          subjectterm,
+          subjectschedule,
+          subjectcomments,
+          subjecttime,
+          postponereason
+        } = intructors;
+        const updatedData = {
+          SubjectCode: subjectcode || '', 
+          SubjectDescription: subjectdescription || '',
+          SubjectSemester: subjectsemester || '',
+          SubjectTerm: subjectterm || '',
+          SubjectSchedule: subjectschedule || '',
+          SubjectComments: subjectcomments || '', 
+          SubjectTime: subjecttime || '',
+          PostponeReason: postponereason || '',
+        };
+        await update(dbEditRef, updatedData);
+        const instructorsRef = ref(db, 'Instructors');
+        const instructorsSnapshot = await get(instructorsRef);
+        if (instructorsSnapshot.exists()) {
+          instructorsSnapshot.forEach((instructor) => {
+            const instructorSubjectsRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
+            update(instructorSubjectsRef, updatedData)
+              .then(() => {
+                if(update){
+                  modal.hide();
+                  setFormSubmitted(true);
+                  setTimeout(() => {
+                    setFormSubmitted(false);
+                  }, 2500);
+                }
+                console.log(`Subject updated successfully for instructor: ${instructor.val().Instructor}`);
+              })
+              .catch((error) => {
+                console.error(`Error updating subject for instructor: ${instructor.val().Instructor}`, error);
+              });
+          });
+        }
+      };
       
     return(
-        <div className="container-fluid px-2 p-5" id="subjects">
-                <div className="row g-5" style={{display: 'flex', flexDirection:'column'}}>
+        <div className="container-fluid px-2 px-5 py-5" id="subjects">
+                <div className="row g-5">
                   <div className="col">
                   <div className="card">
                       <div className="card-header">
@@ -279,7 +346,6 @@ export default function BSIT(){
                                   <th>Subject Term</th>
                                   <th>Subject Schedule</th>
                                   <th style={{ paddingLeft: '50px', paddingRight: '70px' }}>Subject Time</th>
-                                  <th>Subject Comments</th>
                                   <th className="actions">Actions</th>
                                 </tr>
                               </thead>
@@ -287,13 +353,12 @@ export default function BSIT(){
                                 {(
                                   filteredSubjects.map(subject => (
                                     <tr key={subject.key} id="td">
-                                      <td>{subject.SubjectCode}</td>
-                                      <td>{subject.SubjectDescription}</td>
-                                      <td>{subject.SubjectSemester}</td>
-                                      <td>{subject.SubjectTerm}</td>
-                                      <td>{subject.SubjectSchedule}</td>
-                                      <td>{subject.SubjectTime}</td>
-                                      <td className="comment-cell" style={{ maxWidth: '250px', maxHeight: '90px', overflowY: 'auto', fontSize: '14px' }}>{subject.SubjectComments}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectCode}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectDescription}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectSemester}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectTerm}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectSchedule}</td>
+                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectTime}</td>
                                       <td className="button">
                                         <button
                                           className="btn btn-success text-light mx-3"
@@ -383,9 +448,6 @@ export default function BSIT(){
                           <option value="8:00 AM - 12:00 PM">8:00 AM - 12:00 PM</option>
                           <option value="1:00 PM - 5:00 PM">1:00 PM - 5:00 PM</option>
                         </select>
-                        <hr />
-                        <label htmlFor="comment">Optional</label>
-                        <input type="text" className="form-control" name="comment" placeholder="Subject Comment" value={subjectComment} onChange={(e)=>setsubjecComment(e.target.value)} id="" />
                       </form>
                       <div className="modal-footer">
                         <button className="btn btn-secondary" data-bs-dismiss="modal">
@@ -425,6 +487,15 @@ export default function BSIT(){
                     </div>
                   </div>
                 </div>
+                <div id="subjectEdited" className="modal fade" tabIndex="-1" role="dialog">
+                  <div className="modal-dialog">
+                    <div className="modal-content">
+                      <div className="modal-body text-success">
+                        <center className="text-success h4">New Subject added</center>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div id="error" className="modal fade" tabIndex="-1" role="dialog">
                   <div className="modal-dialog">
                     <div className="modal-content">
@@ -434,27 +505,74 @@ export default function BSIT(){
                     </div>
                   </div>
                 </div>
-                <div id="subjectEdit" className="modal fade p-5" tabIndex="-1" role="dialog">
-                  <div className="modal-dialog modal-dialog-centered">
+                <div id="Instructors" className="modal fade p-5" tabIndex="-1" role="dialog">
+                  <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <div className="modal-title h5">Edit Subject:</div>
+                            <div className="modal-title h5">Edit Subject</div>
                         </div>
                       <div className="modal-body">
-                       
+                      <form action=""className="form-control p-3 g-5">
+                        <input className="form-control mb-2" name="subjectcode" value={intructors.subjectcode} onChange={handleChange}/>
+                        <input className="form-control mb-2" name="subjectdescription" value={intructors.subjectdescription} onChange={handleChange}/>
+                        {/**<input value={subjectSemester} onChange={(e)=>setSubjectSemester(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectSemester.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Semester" type="text" name="" id="" /> 
+                        <input value={subjectTerm} onChange={(e)=>setSubjectTerm(e.target.value)} className={`form-control my-3 ${formSubmitted && subjectTerm.trim() === '' ? 'border border-danger': ''}`} placeholder="Subject Term" type="text" name="" id="" />*/}
+                        <select className="form-control mb-2" name="subjectsemester" onChange={handleChange}>
+                          <option defaultValue='' selected value={intructors.subjectsemester} hidden>{intructors.subjectsemester}</option>
+                          <option value="1st Semester">1st Semester</option>
+                          <option value="2nd Semester">2nd Semester</option>
+                        </select>
+                        <select className="form-control mb-2" name="subjectterm" onChange={handleChange}>
+                          <option defaultValue='' selected value={intructors.subjectterm} hidden>{intructors.subjectterm}</option>
+                          <option value="1st Term">1st Term</option>
+                          <option value="2nd Term">2nd Term</option>
+                        </select>
+                        <select className="form-control mb-2" name="subjectschedule" onChange={handleChange}>
+                          <option defaultValue='' selected value={intructors.subjectschedule} hidden>{intructors.subjectschedule}</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wedsnday">Wedsnday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                          <option value="Saturday">Saturday</option>
+                          <option value="Monday-Wednsday-Friday">Monday-Wednsday-Friday</option>
+                          <option value="Monday-Tuesday">Monday-Tuesday</option>
+                        </select>
+                        {/**
+                        <input className={`form-control my-3 ${formSubmitted && subjectTime.trim() === '' || formSubmitted &&  subjectTime.trim() === '00:00 AM - 00:00 AM' || formSubmitted &&  subjectTime.trim() === '00:00 PM - 00:00 PM' ? 'border border-danger': ''}`} value={subjectTime} onChange={handleChange} type="text" name="" placeholder="Type Time e.g 8:00 AM - 10:00 AM" id="" />
+                         * 
+                         */}
+                        <select className="form-control" name="subjecttime"  onChange={handleChange}>
+                          <option selected value={intructors.subjecttime} hidden>{intructors.subjecttime}</option>
+                          <option value="8:00 AM - 10:00 AM">8:00 AM - 10:00 AM</option>
+                          <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+                          <option value="1:00 PM - 3:00 PM">1:00 PM - 3:00 PM</option>
+                          <option value="3:00 PM - 5:00 PM">3:00 PM - 5:00 PM</option>
+                          <option value="5:00 PM - 7:00 PM">5:00 PM - 7:00 PM</option>
+                          <option value="7:00 PM - 9:00 PM">7:00 PM - 9:00 PM</option>
+                          <option value="8:30 AM - 10:30 AM">8:30 AM - 10:30 AM</option>
+                          <option value="10:30 AM - 12:00 PM">10:30 AM - 12:00 PM</option>
+                          <option value="1:30 PM - 3:30 PM">1:30 PM - 3:30 PM</option>
+                          <option value="3:30 PM - 5:30 PM">3:30 PM - 5:30 PM</option>
+                          <option value="5:30 PM - 7:30 PM">5:30 PM - 7:30 PM</option>
+                          <option value="7:30 PM - 9:30 PM">7:30 PM - 9:30 PM</option>
+                          <option value="8:00 AM - 12:00 PM">8:00 AM - 12:00 PM</option>
+                          <option value="1:00 PM - 5:00 PM">1:00 PM - 5:00 PM</option>
+                        </select>
+                      </form>
                       </div>
                     <div className="modal-footer">
                       <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button className="btn btn-success">Save Changes</button>
-                    </div>
+                      <button className="btn btn-primary" onClick={handleEdit}>Save changes</button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div id="deleteModal" className="modal fade" tabIndex="-1" role="dialog">
-                  <div className="modal-dialog modal-dialog-centered">
+                <div id="deleteModal" className="modal fade" data-bs-backdrop="static" tabIndex="-1" role="dialog">
+                  <div className="modal-dialog modal-lg modal-dialog-centered">
                     <div className="modal-content" style={{width: 'fit-content'}}>
                       <div className="modal-body text-success">
-                        <center className="text-danger h5 text-uppercase" id="deleteID">Are you sure you want to delete Subject?</center><br />
+                        <center className="text-danger lead text-uppercase" id="deleteID">Deleting this subject will also remove it from instructors' schedules. Are you sure you want to delete Subject?</center><br />
                         <center>
                         <table className="table table-bordered">
                             <thead>
@@ -469,12 +587,12 @@ export default function BSIT(){
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><b>{intructors?.SubjectCode}</b></td>
-                                    <td><b>{intructors?.SubjectDescription}</b></td>
-                                    <td><b>{intructors?.SubjectSemester}</b></td>
-                                    <td><b>{intructors?.SubjectTerm}</b></td>
+                                    <td className="text-uppercase"><b>{intructors.SubjectCode}</b></td>
+                                    <td className="text-uppercase"><b>{intructors.SubjectDescription}</b></td>
+                                    <td className="text-uppercase"><b>{intructors.SubjectSemester}</b></td>
+                                    <td className="text-uppercase"><b>{intructors.SubjectTerm}</b></td>
                                     <td className="time-cell"><b>{intructors?.SubjectTime}</b></td>
-                                    <td><b>{intructors?.SubjectSchedule}</b></td>
+                                    <td className="text-uppercase"><b>{intructors?.SubjectSchedule}</b></td>
                                 </tr>
                             </tbody>
                         </table>

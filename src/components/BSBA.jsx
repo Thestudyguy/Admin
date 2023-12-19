@@ -228,6 +228,7 @@ export default function BSIT(){
           const pushSubjectRef = ref(db, `Instructors/${selectedInstructor.key}/Subjects/${subjectKey}`);
           if(selectedInstructor){
             await set(pushSubjectRef ,{
+              PostponeReason: '',
               SubjectCode: intructors?.SubjectCode,
               SubjectDescription: intructors?.SubjectDescription,
               SubjectSemester: intructors?.SubjectSemester,

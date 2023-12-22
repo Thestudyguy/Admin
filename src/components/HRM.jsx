@@ -265,6 +265,7 @@ export default function BSIT(){
       const editSubject = (subject) => {
         const Instructors = new Modal(document.getElementById('Instructors'));
         Instructors.show();
+        setModal(Instructors);
         setInstructors({
           subjectKey: subject.key,
           subjectcode: subject.SubjectCode,
@@ -306,9 +307,19 @@ export default function BSIT(){
           instructorsSnapshot.forEach((instructor) => {
             const instructorSubjectsRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
             update(instructorSubjectsRef, updatedData)
-              .then(() => {
-                console.log(`Subject updated successfully for instructor: ${instructor.val().Instructor}`);
-              })
+            .then(() => {
+              document.getElementById('errorContent').innerText = 'Subject updated successfully';
+              if(update){
+                const edited = new Modal(document.getElementById('error'));
+                edited.show();
+                modal.hide();
+                setFormSubmitted(true);
+                setTimeout(() => {
+                  setFormSubmitted(false);
+                  edited.hide();
+                }, 1500);
+              }
+            })
               .catch((error) => {
                 console.error(`Error updating subject for instructor: ${instructor.val().Instructor}`, error);
               });

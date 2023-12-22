@@ -233,3 +233,30 @@ and (max-width: 1605px)
         }
     }
 }
+#logout{
+    position: absolute;
+    top: 85%;
+    left: 20px;
+    background-color: grey;
+}
+#allSubjects{
+    .card-body{
+        max-height: 350px;
+        overflow: auto;
+    }
+}
+#error{
+    
+    height: 100vh;
+    .container{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    img{
+        width: 50%;
+        position: relative;
+        left: 260px;
+    }
+}

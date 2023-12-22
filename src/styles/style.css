@@ -205,4 +205,30 @@ body {
     width: -moz-fit-content;
     width: fit-content;
   }
+}
+#logout {
+  position: absolute;
+  top: 85%;
+  left: 20px;
+  background-color: grey;
+}
+
+#allSubjects .card-body {
+  max-height: 350px;
+  overflow: auto;
+}
+
+#error {
+  height: 100vh;
+}
+#error .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#error img {
+  width: 50%;
+  position: relative;
+  left: 260px;
 }/*# sourceMappingURL=style.css.map */

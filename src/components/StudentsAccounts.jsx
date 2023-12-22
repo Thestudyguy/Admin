@@ -38,7 +38,15 @@ export default function StudentsAccounts() {
     }
     const CreateNewStudent = async (e) => {
         e.preventDefault();
-        try {
+        if(studentFirstName.trim() == ''||  studentLastName.trim() == ''|| studentEmail.trim() == ''|| studentDepartment.trim() == ''|| studentUserName.trim() == ''|| studentPassword.trim() == ''){
+            setFormSubmitted(true);
+            setTimeout(() => {
+            setFormSubmitted(false);
+            }, 1500);
+        }
+        else{
+            try {
+
             await push(dbref, {
                 FirstName: studentFirstName,
                 LastName: studentLastName,
@@ -63,7 +71,7 @@ export default function StudentsAccounts() {
                 }
             })
         } catch (error) {
-
+        }
         }
     }
     const deleteStudentAccount = (student) => {
@@ -142,10 +150,10 @@ export default function StudentsAccounts() {
                         </div>
                         <div className="modal-body lead">
                             <form action="">
-                                <input type="text" value={studentFirstName} onChange={(e) => { setStudentFirstName(e.target.value) }} placeholder="Firt Name" className="form-control mt-3" name="" id="" />
-                                <input type="text" value={studentLastName} onChange={(e) => { setStudentLastName(e.target.value) }} placeholder="Last Name" className="form-control mt-3" name="" id="" />
-                                <input type="text" value={studentEmail} onChange={(e) => { setStudentEmail(e.target.value) }} placeholder="Email" className="form-control mt-3" name="" id="" />
-                                <select name="Department" className="form-control mt-3" id="" value={studentDepartment} onChange={(e) => { setStudentDepartment(e.target.value) }} >
+                                <input className={`form-control my-3 ${formSubmitted && studentFirstName.trim() === '' ? 'border border-danger': ''}`}  type="text" value={studentFirstName} onChange={(e) => { setStudentFirstName(e.target.value) }} placeholder="Firt Name" name="" id="" />
+                                <input type="text"  className={`form-control my-3 ${formSubmitted && studentLastName.trim() === '' ? 'border border-danger': ''}`}  value={studentLastName} onChange={(e) => { setStudentLastName(e.target.value) }} placeholder="Last Name" name="" id="" />
+                                <input type="text" className={`form-control my-3 ${formSubmitted && studentEmail.trim() === '' ? 'border border-danger': ''}`}  value={studentEmail} onChange={(e) => { setStudentEmail(e.target.value) }} placeholder="Email" name="" id="" />
+                                <select name="Department" className={`form-control my-3 ${formSubmitted && studentDepartment.trim() === '' ? 'border border-danger': ''}`}  id="" value={studentDepartment} onChange={(e) => { setStudentDepartment(e.target.value) }} >
                                     <option value="" hidden selected>Select Department</option>
                                     <option value="BSIT">BSIT</option>
                                     <option value="BSBA">BSBA</option>
@@ -156,8 +164,8 @@ export default function StudentsAccounts() {
                                 </select>
                                 <hr />
                                 <span className="lead">T-mobile Account</span>
-                                <input type="text" value={studentUserName} onChange={(e) => { setStudentUserName(e.target.value) }} placeholder="User Name" className="form-control mt-3" name="" id="" />
-                                <input type="text" value={studentPassword} onChange={(e) => { setStudentPassword(e.target.value) }} placeholder="Password" className="form-control mt-3" name="" id="" />
+                                <input type="text" className={`form-control my-3 ${formSubmitted && studentUserName.trim() === '' ? 'border border-danger': ''}`}  value={studentUserName} onChange={(e) => { setStudentUserName(e.target.value) }} placeholder="User Name" name="" id="" />
+                                <input type="text" className={`form-control my-3 ${formSubmitted && studentPassword.trim() === '' ? 'border border-danger': ''}`}  value={studentPassword} onChange={(e) => { setStudentPassword(e.target.value) }} placeholder="Password" name="" id="" />
                             </form>
                         </div>
                         <div className="modal-footer">

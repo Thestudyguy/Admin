@@ -9,6 +9,9 @@ import BSBA from "../components/BSBA";
 import BSCRIM from "../components/BSCRIM";
 import BSTVTED from "../components/BTVTED";
 import SeniorHigh from "../components/SeniorHigh";
+import AllSubjects from "../components/allSubjects";
+import ErrorPage from "../components/errorPage";
+import { AuthProvider } from "firebase/auth";
 export default function Pages(){
     return(
         <Router>
@@ -22,6 +25,8 @@ export default function Pages(){
                 <Route path="/btvted" element={<BSTVTED />} />
                 <Route path="/StudentsAccounts" element={<StudentsAccounts />} />
                 <Route path="/seniorhigh" element={<SeniorHigh />} />
+                <Route path="/alldepartments" element={<AllSubjects />} />
+                <Route path="/error" element={<ErrorPage />} />
             </Routes>
         </Router>
     );

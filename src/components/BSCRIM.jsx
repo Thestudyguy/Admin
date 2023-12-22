@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "bootstrap";
 import { ref, push, onValue, remove, get, child, update, set } from "firebase/database";
 import { db } from "../dbconfig/firebaseConfig";
+import { GoArrowLeft } from "react-icons/go";
+import { useNavigate } from "react-router-dom";
 import "../styles/style.css";
 export default function BSIT(){
+  const nav = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [subjectCode, setSubjectCode] = useState('');
@@ -265,6 +268,7 @@ export default function BSIT(){
       const editSubject = (subject) => {
         const Instructors = new Modal(document.getElementById('Instructors'));
         Instructors.show();
+        setModal(Instructors);
         setInstructors({
           subjectKey: subject.key,
           subjectcode: subject.SubjectCode,
@@ -306,18 +310,33 @@ export default function BSIT(){
           instructorsSnapshot.forEach((instructor) => {
             const instructorSubjectsRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
             update(instructorSubjectsRef, updatedData)
-              .then(() => {
-                console.log(`Subject updated successfully for instructor: ${instructor.val().Instructor}`);
-              })
+            .then(() => {
+              document.getElementById('errorContent').innerText = 'Subject updated successfully';
+              if(update){
+                const edited = new Modal(document.getElementById('error'));
+                edited.show();
+                modal.hide();
+                setFormSubmitted(true);
+                setTimeout(() => {
+                  setFormSubmitted(false);
+                  edited.hide();
+                }, 1500);
+              }
+            })
               .catch((error) => {
                 console.error(`Error updating subject for instructor: ${instructor.val().Instructor}`, error);
               });
           });
         }
       };
-      
+      const handleHistory = () => {
+        nav(-1);
+      }
     return(
-        <div className="container-fluid px-2 px-5 py-5" id="subjects">
+        <div className="container-fluid px-5" id="subjects">
+           <button className="btn btn-secondary my-2" onClick={handleHistory}>
+              <GoArrowLeft className="mb-1"/>
+            </button>
                 <div className="row g-5">
                   <div className="col">
                   <div className="card">

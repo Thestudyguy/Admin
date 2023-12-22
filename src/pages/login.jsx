@@ -17,35 +17,44 @@ export default function Login() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log("User state changed:", user);
       if (user) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
       }
     });
-
+  
     return () => unsubscribe();
   }, [auth]);
+  
 
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
+      console.log("Logging in...");
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       setLoading(false);
+      setLoginStatus("Login successful");
     } catch (error) {
       console.error("Error logging in: ", error);
       setLoading(false);
       setLoginStatus("Login failed. Invalid username or password");
+      setTimeout(() => {
+        setLoginStatus(null);
+      }, 3000);
     }
   };
-  useEffect(() => {
-    if (isAuthenticated) {
-      nav("/dashboard");
-    }
-  }, [isAuthenticated, nav]);
+useEffect(() => {
+  if (isAuthenticated && loginStatus === "Login successful") {
+    nav("/dashboard");
+  }
+}, [isAuthenticated, loginStatus, nav]);
+  
+
   return (
     <div className="jumbotron-fluid" id="login">
       <div className="container-fluid" id="containerLogin">

@@ -308,12 +308,16 @@ export default function BSIT(){
             const instructorSubjectsRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
             update(instructorSubjectsRef, updatedData)
               .then(() => {
+                document.getElementById('errorContent').innerText = 'Subject updated successfully';
                 if(update){
+                  const edited = new Modal(document.getElementById('error'));
+                  edited.show();
                   modal.hide();
                   setFormSubmitted(true);
                   setTimeout(() => {
                     setFormSubmitted(false);
-                  }, 2500);
+                    edited.hide();
+                  }, 1500);
                 }
                 console.log(`Subject updated successfully for instructor: ${instructor.val().Instructor}`);
               })
@@ -354,12 +358,12 @@ export default function BSIT(){
                                 {(
                                   filteredSubjects.map(subject => (
                                     <tr key={subject.key} id="td">
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectCode}</td>
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectDescription}</td>
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectSemester}</td>
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectTerm}</td>
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectSchedule}</td>
-                                      <td className={`${formSubmitted ? 'border border-success': ''}`}>{subject.SubjectTime}</td>
+                                      <td>{subject.SubjectCode}</td>
+                                      <td>{subject.SubjectDescription}</td>
+                                      <td>{subject.SubjectSemester}</td>
+                                      <td>{subject.SubjectTerm}</td>
+                                      <td>{subject.SubjectSchedule}</td>
+                                      <td>{subject.SubjectTime}</td>
                                       <td className="button">
                                         <button
                                           className="btn btn-success text-light mx-3"
@@ -498,10 +502,10 @@ export default function BSIT(){
                   </div>
                 </div>
                 <div id="error" className="modal fade" tabIndex="-1" role="dialog">
-                  <div className="modal-dialog">
+                  <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                       <div className="modal-body text-success">
-                        <center className="text-danger h4"><p id="errorContent"></p></center>
+                        <center className="text-success h4"><p id="errorContent"></p></center>
                       </div>
                     </div>
                   </div>

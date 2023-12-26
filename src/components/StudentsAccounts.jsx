@@ -110,7 +110,7 @@ export default function StudentsAccounts() {
                     </div>
                     <input type="search" placeholder="Search..." value={searchStudent} onChange={(e)=>setSearchStudent(e.target.value)} name="search" className="form-control" id="" />
                     <div className="card-body">
-                        <table className="table table-stripped">
+                        <table className="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Firt Name</th>

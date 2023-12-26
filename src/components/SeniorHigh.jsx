@@ -341,7 +341,7 @@ export default function SeniorHigh(){
                       </div>
                       </div>
                       <div className="card-body">
-                      <table className="table table-bordered">
+                      <table className="table table-bordered table-hover">
                               <thead>
                                 <tr>
                                   <th>Subject Code</th>

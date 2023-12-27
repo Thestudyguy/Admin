@@ -206,13 +206,6 @@ body {
     width: fit-content;
   }
 }
-#logout {
-  position: absolute;
-  top: 85%;
-  left: 20px;
-  background-color: grey;
-}
-
 #allSubjects .card-body {
   max-height: 350px;
   overflow: auto;

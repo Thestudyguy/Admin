@@ -253,15 +253,15 @@ export default function SeniorHigh(){
         } catch (error) {
         }
       };
-      const filteredSubjects = subjects.filter(
+      const filteredSubjects = subjects && subjects.filter(
         subject =>
-          subject.SubjectCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          subject.SubjectDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          subject.SubjectSemester.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          subject.SubjectTerm.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          subject.SubjectSchedule.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          subject.SubjectTime.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+          (subject.SubjectCode && subject.SubjectCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (subject.SubjectDescription && subject.SubjectDescription.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (subject.SubjectSemester && subject.SubjectSemester.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (subject.SubjectTerm && subject.SubjectTerm.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (subject.SubjectSchedule && subject.SubjectSchedule.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (subject.SubjectTime && subject.SubjectTime.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
       const editSubject = (subject) => {
         const Instructors = new Modal(document.getElementById('Instructors'));
         Instructors.show();

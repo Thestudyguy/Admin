@@ -75,48 +75,48 @@ export default function Dashboard() {
     if (username.trim() === '' || password.trim() === '' || name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
       setFormSubmitted(true);
       return;
-    }else{
+    } else {
       try {
-        
+        await push(dbref, {
+          ID: randomNumber,
+          Instructor: name,
+          Email: email,
+          Department: department,
+          UserName: username,
+          Password: password
+        })
+          .then(() => {
+            setRandomNumber(null);
+            Setname('');
+            Setemail('');
+            setDepartment('');
+            Setusername('');
+            SetPassword('');
+            setFormSubmitted(false);
+            if (showModal) {
+              showModal.hide();
+              const success = new Modal(document.getElementById('success'));
+              success.show();
+              setTimeout(() => {
+                success.hide();
+              }, 1500);
+            }
+          })
+          .catch((error) => {
+            console.error('Error pushing data:', error);
+            const errorModal = new Modal(document.getElementById('error'));
+            const errorContent = document.getElementById('errorContent');
+            errorContent.textContent = `Error: ${error.message || 'Unknown error'}`;
+            errorModal.show();
+            nav('/error');
+          });
       } catch (error) {
         nav('/error');
-        await push(dbref, {
-      ID: randomNumber,
-      Instructor: name,
-      Email: email,
-      Department: department,
-      UserName: username,
-      Password: password
-    })
-      .then(() => {
-        setRandomNumber(null);
-        Setname('');
-        Setemail('');
-        setDepartment('');
-        Setusername('');
-        SetPassword('');
-        setFormSubmitted(false);
-        if (showModal) {
-          showModal.hide();
-          const success = new Modal(document.getElementById('success'));
-          success.show();
-          setTimeout(() => {
-            success.hide();
-          }, 1500);
-        }
-      })
-      .catch((error) => {
-        console.error('Error pushing data:', error);
-        const errorModal = new Modal(document.getElementById('error'));
-        const errorContent = document.getElementById('errorContent');
-        errorContent.textContent = `Error: ${error.message || 'Unknown error'}`;
-        errorModal.show();
-        nav('/error');
-      });
+
       }
     }
 
-    
+
   };
   const newInstuctorModal = () => {
     const newInstructor = new Modal(document.getElementById('create'));
@@ -191,12 +191,16 @@ export default function Dashboard() {
       errorModal.show();
     }
   };
-  const filteredInstructors = instructors.filter((instructor) =>
-    instructor.Instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instructor.Email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instructor.ID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    instructor.Department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredInstructors = instructors && instructors.filter((instructor) => {
+    const idString = String(instructor.ID); // Convert ID to string
+
+    return (
+      (instructor.Instructor && instructor.Instructor.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (instructor.Email && instructor.Email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (idString && idString.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (instructor.Department && instructor.Department.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
   const removeSubjectModal = (subject) => {
     setSubjectToRemove(subject);
     if (showModal) {
@@ -287,7 +291,7 @@ export default function Dashboard() {
   };
   const handleSelectChange = (e) => {
     const selectedDepartment = e.target.value;
-  
+
     switch (selectedDepartment) {
       case 'BSIT':
         nav('/subjects');
@@ -308,16 +312,13 @@ export default function Dashboard() {
         nav('/seniorhigh');
         break;
       default:
-        // Handle default case or do nothing
+      // Handle default case or do nothing
     }
   };
-  
+
   return (
     <div className="bg-success container-fluid p-5" id="dashboard">
-      <button className="btn text-light" id='logout' onClick={handleLogout}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
-        <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
-      </svg> Log out</button>
+
       <div className="col">
         {/* <div className="row">
           <select name="" id="" onChange={handleSelectChange}>
@@ -332,7 +333,7 @@ export default function Dashboard() {
         </div> */}
         <div className="row">
           <ul>
-          
+
           </ul>
         </div>
         <div className="">
@@ -341,15 +342,20 @@ export default function Dashboard() {
           </button>
           <button className="btn btn-secondary mx-1 mb-2" onClick={StudentsAccounts}>Student Accounts</button>
           <button className="btn btn-secondary mb-2" onClick={allSubjects}>Subjects</button>
+          <button className="btn btn-dark mx-1 mb-2 text-light" id='logout' onClick={handleLogout}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
+            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
+          </svg> Log out</button>
           <select className="mx-1 p-1" name="" id="" onChange={handleSelectChange}>
-          <option value="" selected hidden>Departments</option>
-          <option value="BSIT">BSIT</option>
-          <option value="BSBA">BSBA</option>
-          <option value="BSHM">BSHM</option>
-          <option value="BSCRIM">BSCRIM</option>
-          <option value="BTVTED">BTVTED</option>
-          <option value="SeniorHigh">Senior High</option>
-        </select>
+
+            <option value="" selected hidden>Departments</option>
+            <option value="BSIT">BSIT</option>
+            <option value="BSBA">BSBA</option>
+            <option value="BSHM">BSHM</option>
+            <option value="BSCRIM">BSCRIM</option>
+            <option value="BTVTED">BTVTED</option>
+            <option value="SeniorHigh">Senior High</option>
+          </select>
         </div>
         <div className="row" id="row">
           <div className="">
@@ -386,7 +392,6 @@ export default function Dashboard() {
                           </button>
                         </td>
                         <td>
-                          {/* <button className="btn btn-success">Edit</button> */}
                           <button className="btn btn-danger" onClick={() => handleDeleteClick(instructor)}>
                             Delete
                           </button>
@@ -695,7 +700,7 @@ export default function Dashboard() {
                   <option value="8:00 AM - 12:00 PM">8:00 AM - 12:00 PM</option>
                   <option value="1:00 PM - 5:00 PM">1:00 PM - 5:00 PM</option>
                 </select>
-                <input className="form-control mb-2" value={subjectEdit.PostponeReason} onChange={handleChange} type="text" name="PostponeReason" id="" placeholder="Reason to Postpone"/>
+                <input className="form-control mb-2" value={subjectEdit.PostponeReason} onChange={handleChange} type="text" name="PostponeReason" id="" placeholder="Reason to Postpone" />
               </form>
             </div>
             <div className="modal-footer">

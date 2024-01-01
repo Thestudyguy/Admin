@@ -5,7 +5,7 @@ import BSTVTED from "../components/BTVTED";
 import BSHM from "../components/HRM";
 import SeniorHigh from "../components/SeniorHigh";
 import BSIT from "../components/BSIT";
-export default function Departments(){
+function Departments(){
     return(
         <div className="container-fluid" id="subjects" >
             <div className="row" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>

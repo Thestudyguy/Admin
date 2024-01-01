@@ -3,7 +3,7 @@ import { Modal } from "bootstrap";
 import { ref, push, onValue, remove, get, child, update, set } from "firebase/database";
 import { db } from "../dbconfig/firebaseConfig";
 import "../styles/style.css";
-export default function BSIT(){
+export default function BSIT({dbRef}){
     const [searchTerm, setSearchTerm] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [subjectCode, setSubjectCode] = useState('');

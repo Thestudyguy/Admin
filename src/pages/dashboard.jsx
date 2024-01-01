@@ -192,8 +192,7 @@ export default function Dashboard() {
     }
   };
   const filteredInstructors = instructors && instructors.filter((instructor) => {
-    const idString = String(instructor.ID); // Convert ID to string
-
+    const idString = String(instructor.ID);
     return (
       (instructor.Instructor && instructor.Instructor.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (instructor.Email && instructor.Email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -317,7 +316,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-success container-fluid p-5" id="dashboard">
+    <div className="container-fluid" id="dashboard">
 
       <div className="col">
         {/* <div className="row">
@@ -338,7 +337,7 @@ export default function Dashboard() {
         </div>
         <div className="">
           <button className="btn btn-primary mb-2" onClick={newInstuctorModal}>
-            New+
+            Add New Instructor
           </button>
           <button className="btn btn-secondary mx-1 mb-2" onClick={StudentsAccounts}>Student Accounts</button>
           <button className="btn btn-secondary mb-2" onClick={allSubjects}>Subjects</button>
@@ -346,8 +345,8 @@ export default function Dashboard() {
             <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
             <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
           </svg> Log out</button>
+          <button className="btn btn-primary" onClick={()=>{nav('/admin')}}>admin</button>
           <select className="mx-1 p-1" name="" id="" onChange={handleSelectChange}>
-
             <option value="" selected hidden>Departments</option>
             <option value="BSIT">BSIT</option>
             <option value="BSBA">BSBA</option>

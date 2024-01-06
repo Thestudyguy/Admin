@@ -19,7 +19,8 @@ export default function AllSubjects() {
     SubjectTerm: '',
     SubjectSchedule: '',
     SubjectTime: '',
-    selectedDepartment: '', // New state for selected department
+    selectedDepartment: '',
+    selectedDepartments: [], // Initialize selectedDepartments as an empty array
   });
   const [subjectFile, setSubjectFile] = useState(null);
   const [instructorLists, setInstructorLists] = useState([]);
@@ -45,41 +46,47 @@ export default function AllSubjects() {
 
   const submitForm = async (e) => {
     e.preventDefault();
-    const dataToPush = {
-      SubjectCode: formState.SubjectCode,
-      SubjectDescription: formState.SubjectDescription,
-      SubjectSemester: formState.SubjectSemester,
-      SubjectTerm: formState.SubjectTerm,
-      SubjectSchedule: formState.SubjectSchedule,
-      SubjectTime: formState.SubjectTime,
-      selectedDepartment: formState.selectedDepartment,
-    };
-
-    try {
-      const subjectsRef = ref(db, `Subjects/${dataToPush.selectedDepartment}`);
-      await push(subjectsRef, dataToPush);
-      setFormState({
-        SubjectCode: '',
-        SubjectDescription: '',
-        SubjectSemester: '',
-        SubjectTerm: '',
-        SubjectSchedule: '',
-        SubjectTime: '',
-        selectedDepartment: '',
-      });
-      if (modal) {
-        modal.hide();
+  
+    // Iterate through selected departments and push the new subject
+    formState.selectedDepartments.forEach(async (selectedDepartment) => {
+      const dataToPush = {
+        SubjectCode: formState.SubjectCode,
+        SubjectDescription: formState.SubjectDescription,
+        SubjectSemester: formState.SubjectSemester,
+        SubjectTerm: formState.SubjectTerm,
+        SubjectSchedule: formState.SubjectSchedule,
+        SubjectTime: formState.SubjectTime,
+      };
+  
+      try {
+        const subjectsRef = ref(db, `Subjects/${selectedDepartment}`);
+        await push(subjectsRef, dataToPush);
+      } catch (error) {
+        console.error(`Error pushing data to Firebase for ${selectedDepartment}:`, error);
       }
-    } catch (error) {
-      console.error('Error pushing data to Firebase:', error);
+    });
+  
+    // Reset the form state and hide the modal
+    setFormState({
+      SubjectCode: '',
+      SubjectDescription: '',
+      SubjectSemester: '',
+      SubjectTerm: '',
+      SubjectSchedule: '',
+      SubjectTime: '',
+      selectedDepartment: '',
+      selectedDepartments: [],
+    });
+  
+    if (modal) {
+      modal.hide();
     }
   };
-
+  
   const nav = useNavigate();
 
   useEffect(() => {
     const subjectsRef = ref(db, "Subjects");
-
     onValue(subjectsRef, (snapshot) => {
       const subjectsData = snapshot.val();
       const combinedSubjects = subjectsData
@@ -147,6 +154,15 @@ export default function AllSubjects() {
       }
     });
   }, []);
+  const handleDepartmentChange = (event) => {
+    const { name, value, checked } = event.target;
+    setFormState((prevState) => ({
+      ...prevState,
+      selectedDepartments: checked
+        ? [...prevState.selectedDepartments, value]
+        : prevState.selectedDepartments.filter((dept) => dept !== value),
+    }));
+  };
   const ViewInstructors = (subject) => {
     setSelectedSubject(subject);
     const instructorModal = new Modal(document.getElementById('Instructors'));
@@ -193,10 +209,10 @@ export default function AllSubjects() {
 
   return (
     <div className="container-fluid" id="allSubjects">
-      <button className="btn btn-secondary my-2" onClick={handleHistory}>
-        <GoArrowLeft className="mb-1" />
-      </button>
       <div className="container p-5">
+      {/* <button className="btn btn-secondary my-2" onClick={handleHistory}>
+        <GoArrowLeft className="mb-1" />
+      </button> */}
         <div className="card" style={{ resize: 'auto' }}>
           <div className="card-header">
             <div className="card-title">
@@ -228,7 +244,9 @@ export default function AllSubjects() {
                 </tr>
               </thead>
               <tbody>
-                {filteredSubjects.map((subject) => (
+              {filteredSubjects
+                .filter((subject) => subject.department && subject.SubjectCode) // Exclude subjects without valid departments or SubjectCode
+                .map((subject) => (
                   <tr key={subject.key}>
                     <td>{subject.department}</td>
                     <td>{subject.SubjectCode}</td>
@@ -239,14 +257,14 @@ export default function AllSubjects() {
                     <td>{subject.SubjectTime}</td>
                   </tr>
                 ))}
-              </tbody>
+            </tbody>
+
             </table>
           </div>
           <div className="card-footer">
             <button className="btn btn-primary" onClick={addNewSubject}>
               New
             </button>
-            <button className="btn bt-success">Import Subjects</button>
           </div>
         </div>
       </div>
@@ -298,15 +316,23 @@ export default function AllSubjects() {
                 </select>
                 <hr />
                 <div className="departments d-flex flex-column">
-                  <select
-          name="selectedDepartment"
-          value={formState.selectedDepartment}
-          onChange={handleInputChange}
-          className="form-control mb-2"
-          id="departmentSelect"
-        >
-                  </select>
-                </div>
+                {formState.allDepartments && formState.allDepartments.map((department) => (
+  <div key={department} className="form-check">
+    <input
+      type="checkbox"
+      id={`department_${department}`}
+      name="selectedDepartments"
+      value={department}
+      onChange={handleDepartmentChange}
+      checked={formState.selectedDepartments.includes(department)}
+      className="form-check-input"
+    />
+    <label htmlFor={`department_${department}`} className="form-check-label">
+      {department}
+    </label>
+  </div>
+))}
+</div>
                 <hr />
                 <select
                   name="SubjectSchedule"

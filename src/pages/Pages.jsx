@@ -14,6 +14,8 @@ import ErrorPage from "../components/errorPage";
 import { AuthProvider } from "firebase/auth";
 import AdminDashboard from "./AdminDashboard";
 import Departments from "../components/departments";
+import ImportFiles from "../components/Imports";
+import Schedules from "../components/schedules";
 export default function Pages() {
   return (
     <Router>
@@ -31,6 +33,8 @@ export default function Pages() {
         <Route path="/error" element={<ErrorPage />} />
         <Route path="/Department" element={<Departments />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/imports" element={<ImportFiles />} />
+        <Route path="/schedules" element={<Schedules />} />
       </Routes>
     </Router>
   );

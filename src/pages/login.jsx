@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import image from "../images/undraw_hello_re_3evm.svg";
-import { db } from "../dbconfig/firebaseConfig"; // Assuming this is where you have Firebase initialization.
+import { db } from "../dbconfig/firebaseConfig";
 
 export default function Login() {
   const nav = useNavigate();
@@ -11,13 +11,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loginStatus, setLoginStatus] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // New state to track authentication status
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const auth = getAuth();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log("User state changed:", user);
+      //console.log("User state changed:", user);
       if (user) {
         setIsAuthenticated(true);
       } else {
@@ -34,13 +34,13 @@ export default function Login() {
     e.preventDefault();
   
     try {
-      console.log("Logging in...");
+      //console.log("Logging in...");
       setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       setLoading(false);
       setLoginStatus("Login successful");
     } catch (error) {
-      console.error("Error logging in: ", error);
+      //console.error("Error logging in: ", error);
       setLoading(false);
       setLoginStatus("Login failed. Invalid username or password");
       setTimeout(() => {
@@ -50,7 +50,7 @@ export default function Login() {
   };
 useEffect(() => {
   if (isAuthenticated && loginStatus === "Login successful") {
-    nav("/dashboard");
+    nav("/admin");
   }
 }, [isAuthenticated, loginStatus, nav]);
   

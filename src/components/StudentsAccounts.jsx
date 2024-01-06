@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import { Modal } from "bootstrap";
 import { db } from "../dbconfig/firebaseConfig";
 import { ref, push, onValue, remove } from "firebase/database";
+import { useNavigate } from "react-router-dom";
+import { GoArrowLeft } from "react-icons/go";
 export default function StudentsAccounts() {
     const [modal, setModal] = useState(null);
     const [studentFirstName, setStudentFirstName] = useState('');
@@ -16,6 +18,7 @@ export default function StudentsAccounts() {
     const [search, setSearch] = useState('');
     const [account, setAccount] = useState(null);
     const [searchStudent, setSearchStudent] = useState('');
+    const nav = useNavigate();
     const dbref = ref(db, 'Student Accounts/');
     useEffect(() => {
         onValue(dbref, (snapshot) => {
@@ -101,9 +104,16 @@ export default function StudentsAccounts() {
     students.Email.toLowerCase().includes(searchStudent.toLowerCase()) ||
     students.UserName.toLowerCase().includes(searchStudent.toLowerCase())
     )
+
+    const navigateHistory = () =>{
+        nav(-1);
+    }
     return (
         <div className="container-fluid">
             <div className="container p-5">
+                {/* <button className="btn btn-secondary mb-3" onClick={navigateHistory}>
+                    <GoArrowLeft />
+                </button> */}
                 <div className="card">
                     <div className="card-header">
                         <div className="card-title">Students Accounts</div>

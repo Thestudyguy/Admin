@@ -23,6 +23,7 @@ export default function Departments() {
     const [instructors, setInstructors] = useState([]);
     const [subjectIsAssigned, setSubjectIsAssigned] = useState(null);
     const [selectedInstructor, setSelectedInstructor] = useState(null);
+    const [subjectState, setSubjectState] = useState(null);
     const [subjectToPush, setSubjectToPush] = useState({
         subjectkey: null,
         subjectcode: '',
@@ -136,25 +137,46 @@ export default function Departments() {
     const handleHistory = () => {
         nav(-1);
       }
-      const Instructor = (subject) => {
+      const Instructor = async (subject) => {
         console.log('Clicked Subject:', subject.SubjectCode, subject.SubjectDescription, subject.SubjectSchedule, subject.SubjectTime);
+    
         const instructorModal = new Modal(document.getElementById('instructors'));
         instructorModal.show();
         setModal(instructorModal);
         setSubjectToPush(subject);
         setSubjectKey(subject.key);
-      }
+    
+        //try {
+        //    for (const instructor of instructors) {
+        //        const subRef = ref(db, `Instructors/${instructor.key}/Subjects/${subjectKey}`);
+        //        const isSubjectExists = await get(subRef);
+    //
+        //        if (isSubjectExists.exists()) {
+        //            setSubjectIsAssigned(true);
+        //            return;
+        //        }
+        //    }
+    //
+        //    setSubjectIsAssigned(false);
+        //} catch (error) {
+        //    console.error(error);
+        //}
+    };
+    
+    
       const AssignSubject = async (selectedInstructor) => {
         setSelectedInstructor(selectedInstructor);
-    
-        try {
+        //console.log({ ...subjectToPush });
+            try {
             const pushSubjectRef = ref(db, `Instructors/${selectedInstructor.key}/Subjects/${subjectKey}`);
-    
-            // Check if the subject is already assigned to the instructor
             const existingAssignment = await get(pushSubjectRef);
             if (existingAssignment.exists()) {
                 console.log('Subject is already assigned to the instructor.');
                 setSubjectIsAssigned(true);
+                setSubjectState(null);                    
+                setTimeout(() => {
+                    setSubjectIsAssigned(null);
+                }, 5000);
             } else {
                 await set(pushSubjectRef, {
                     SubjectCode: subjectToPush?.SubjectCode,
@@ -164,23 +186,35 @@ export default function Departments() {
                     SubjectSchedule: subjectToPush?.SubjectSchedule,
                     SubjectTime: subjectToPush?.SubjectTime,
                 }).then((e) => {
-                    const assignment = new Modal(document.getElementById('Assignment'));
-                    assignment.show();
-                    if (modal) {
-                        modal.hide();
-                    }
-                    setTimeout(() => {
-                        assignment.hide();
-                    }, 1500);
+                    setSubjectIsAssigned(null);
+                    setSubjectState(true);
+                    setTimeout(() => {    
+                    setSubjectState(null);                    
+                }, 5000);
                 })
-                .catch((eror) => {
-                    console.error(eror);
+                .catch((error) => {
+                    console.error(error);
                 });
             }
         } catch (error) {
             console.error(error);
         }
     };
+    const editSubject = (subject) => {
+        const Instructors = new Modal(document.getElementById('Instructors'));
+        Instructors.show();
+        setModal(Instructors);
+        setSubjectToPush({
+            subjectkey: subject.key,
+            subjectcode: '',
+            subjectdescription: '',
+            subjectsemester: '',
+            subjectterm: '',
+            subjectschedule: '',
+            subjecttime: '',
+        });
+        setSubjectKey(subject.key);
+      }
     return (
         <div className="container-fluid p-5">
             <button className="btn btn-secondary my-2" onClick={handleHistory}>
@@ -227,6 +261,9 @@ export default function Departments() {
                           >
                             Assign
                           </button>
+                          <button className="btn btn-primary" onClick={() => {
+                            editSubject(subject);
+                          }}>Edit</button>
                                         </td>
                                     </tr>
                                 ))
@@ -303,7 +340,7 @@ export default function Departments() {
         <div className="modal-dialog modal-dialog-scrollable">
           <div className="modal-content" style={{ width: 'fit-content' }}>
             <div className="modal-header">
-              <div className="text-dark text-uppercase h5">Assign Subject: <span className="text-primary h5"></span> </div>
+              <div className="text-dark text-uppercase h5">Assign Subject: <span className="text-primary h5">{subjectToPush?.SubjectCode} {subjectToPush?.SubjectDescription}</span> </div>
             </div>
             <div className="modal-body text-success">
               <center className="text-success">
@@ -318,15 +355,14 @@ export default function Departments() {
                   </thead>
                   <tbody>
                   {instructors.map((instructors) => {
-                      if (instructors.Department === `${department}`) {
+                      if (instructors.Department === department) {
                         return (
                           <tr key={instructors.key}>
                             <td>{instructors.Instructor}</td>
                             <td>{instructors.Email}</td>
                             <td>{instructors.Department}</td>
                             <td>
-                                {subjectIsAssigned && <button className="btn btn-success text-light mx-3" onClick={() => AssignSubject(instructors)}>Assign</button>}
-                              
+                               <button className="btn btn-success text-light mx-3" onClick={() => AssignSubject(instructors)}>Assign</button>
                             </td>
                           </tr>
                         );
@@ -335,6 +371,8 @@ export default function Departments() {
                     })}
                   </tbody>
                 </table>
+                {subjectIsAssigned && <div className="alert alert-danger alert-dismissible lead">Subject is Already assigned to the selected Instructor <p className="text-uppercase">{selectedInstructor.Instructor}</p></div>}
+                {subjectState && <div className="alert alert-success alert-dismissible lead">Subject assigned to Instructor <p className="text-uppercase">{selectedInstructor.Instructor}</p></div>}
               </center>
             </div>
             <div className="modal-footer"><button className="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>

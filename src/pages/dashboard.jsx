@@ -72,7 +72,7 @@ export default function Dashboard() {
   };
 
   const pushdata = async () => {
-    if (username.trim() === '' || password.trim() === '' || name.trim() === '' || email.trim() === '' || department.trim() === '', randomNumber === null) {
+    if (username.trim() === '' || password.trim() === '' || name.trim() === '' || email.trim() === '' || department.trim() === '' || username.trim() === '' || password.trim() === ''|| randomNumber === null) {
       setFormSubmitted(true);
       return;
     } else {
@@ -316,7 +316,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container-fluid" id="dashboard">
+    <div className="container-fluid p-5" id="dashboard">
 
       <div className="col">
         {/* <div className="row">
@@ -339,14 +339,14 @@ export default function Dashboard() {
           <button className="btn btn-primary mb-2" onClick={newInstuctorModal}>
             Add New Instructor
           </button>
-          <button className="btn btn-secondary mx-1 mb-2" onClick={StudentsAccounts}>Student Accounts</button>
-          <button className="btn btn-secondary mb-2" onClick={allSubjects}>Subjects</button>
-          <button className="btn btn-dark mx-1 mb-2 text-light" id='logout' onClick={handleLogout}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+          {/* <button className="btn btn-secondary mx-1 mb-2" onClick={StudentsAccounts}>Student Accounts</button> */}
+          {/* <button className="btn btn-secondary mb-2" onClick={allSubjects}>Subjects</button> */}
+          {/* <button className="btn btn-dark mx-1 mb-2 text-light" id='logout' onClick={handleLogout}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
             <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
           </svg> Log out</button>
-          <button className="btn btn-primary" onClick={()=>{nav('/admin')}}>admin</button>
-          <select className="mx-1 p-1" name="" id="" onChange={handleSelectChange}>
+          <button className="btn btn-primary" onClick={()=>{nav('/admin')}}>admin</button> */}
+          {/* <select className="mx-1 p-1" name="" id="" onChange={handleSelectChange}>
             <option value="" selected hidden>Departments</option>
             <option value="BSIT">BSIT</option>
             <option value="BSBA">BSBA</option>
@@ -354,7 +354,7 @@ export default function Dashboard() {
             <option value="BSCRIM">BSCRIM</option>
             <option value="BTVTED">BTVTED</option>
             <option value="SeniorHigh">Senior High</option>
-          </select>
+          </select> */}
         </div>
         <div className="row" id="row">
           <div className="">

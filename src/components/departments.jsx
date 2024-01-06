@@ -5,6 +5,9 @@ import { db } from "../dbconfig/firebaseConfig";
 import { Modal } from "bootstrap";
 import { useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
+import {FaEdit} from 'react-icons/fa';
+import { IoMdAddCircle } from 'react-icons/io';
+import {VscArrowSmallUp, VscArrowUp} from 'react-icons/vsc';
 export default function Departments() {
     const nav = useNavigate();
     const location = useLocation();
@@ -24,6 +27,9 @@ export default function Departments() {
     const [subjectIsAssigned, setSubjectIsAssigned] = useState(null);
     const [selectedInstructor, setSelectedInstructor] = useState(null);
     const [subjectState, setSubjectState] = useState(null);
+    const [subjectSchedules, setSubjectSchedules] = useState([]);
+    const [time, SetTime] = useState([]);
+    const [schoolYear, setSubjectSchoolYear] = useState([]);
     const [subjectToPush, setSubjectToPush] = useState({
         subjectkey: null,
         subjectcode: '',
@@ -201,9 +207,9 @@ export default function Departments() {
         }
     };
     const editSubject = (subject) => {
-        const Instructors = new Modal(document.getElementById('Instructors'));
-        Instructors.show();
-        setModal(Instructors);
+        const editModal = new Modal(document.getElementById('editModal'));
+        editModal.show();
+        setModal(editModal);
         setSubjectToPush({
             subjectkey: subject.key,
             subjectcode: '',
@@ -259,11 +265,11 @@ export default function Departments() {
                               Instructor(subject);
                             }}
                           >
-                            Assign
+                            Assign <VscArrowUp />
                           </button>
                           <button className="btn btn-primary" onClick={() => {
                             editSubject(subject);
-                          }}>Edit</button>
+                          }}>Edit <b><FaEdit className="mb-1"/></b></button>
                                         </td>
                                     </tr>
                                 ))
@@ -273,7 +279,7 @@ export default function Departments() {
                 </div>
                 <div className="card-footer">
                     <button className="btn btn-primary" onClick={addNewSubject}>
-                        Add New Subject
+                        Add New Subject<IoMdAddCircle className="m-1"/>
                     </button>
                 </div>
             </div>

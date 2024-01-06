@@ -400,7 +400,8 @@ export default function BSIT() {
             </div>
             <div className="card-footer">
               <button className="btn btn-primary" onClick={BSIT}>
-                New
+              Add New Subject
+
               </button>
             </div>
           </div>

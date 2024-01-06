@@ -6,7 +6,7 @@ import { MdOutlineDelete } from 'react-icons/md';
 import { IoMdAddCircle } from 'react-icons/io';
 import { Modal } from "bootstrap";
 import { FcCheckmark } from 'react-icons/fc';
-export default function Schedules() {
+export default function Schedules({ state }) {
     const [schedule, setSchedule] = useState('');
     const [time, setTime] = useState('');
     const [Schedules, setSchedules] = useState([]);
@@ -19,7 +19,11 @@ export default function Schedules() {
     const [pushState, setPushState] = useState(null);
     const [inputState, setInputState] = useState(null);
     const [input, setInput] = useState('');
-    const dbref = { time: ref(db, 'Subject Time'), schedule: ref(db, 'Subject Schedules'), departments: ref(db, 'Subjects') };
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [schoolYear, setSchoolYear] = useState('');
+    const [schoolYearDAta, setSchoolYearData] = useState([]);
+    const nav = useNavigate();
+    const dbref = {schoolYear: ref(db, 'School Year'), time: ref(db, 'Subject Time'), schedule: ref(db, 'Subject Schedules'), departments: ref(db, 'Subjects') };
     //const timeRef = ref(db, 'Time');
     //const scheduleRef = ref(db, 'Schedule');
     //const departments = ref(db, 'Subjects');
@@ -102,6 +106,11 @@ export default function Schedules() {
     const handleDelete = (e) =>{
         console.log(e);
     }
+    const handleDepartmentChange = (event) => {
+        const newSelectedDepartment = event.target.value;
+        setSelectedDepartment(newSelectedDepartment);
+        nav(`/Department?department=${newSelectedDepartment}`, { state });
+      };
     return (
         <div className="container-fluid">
             <div className="row">
@@ -168,7 +177,7 @@ export default function Schedules() {
                             </table>
                         </div>
                         <div className="card-footer">
-                            <button className="btn btn-primary" onClick={() => { addNew('Subject Schedules', 'Subject Schedules') }}>Add New Subject<IoMdAddCircle /></button>
+                            <button className="btn btn-primary" onClick={() => { addNew('Subject Schedules', 'Subject Schedules') }}>Add New Subject Schedule<IoMdAddCircle /></button>
                         </div>
                     </div>
                 </div>

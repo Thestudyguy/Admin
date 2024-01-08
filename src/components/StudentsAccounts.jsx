@@ -5,6 +5,7 @@ import { db } from "../dbconfig/firebaseConfig";
 import { ref, push, onValue, remove } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import { GoArrowLeft } from "react-icons/go";
+import { MdOutlineDelete } from "react-icons/md";
 export default function StudentsAccounts() {
     const [modal, setModal] = useState(null);
     const [studentFirstName, setStudentFirstName] = useState('');
@@ -141,7 +142,7 @@ export default function StudentsAccounts() {
                                         <td>{students.Department}</td>
                                         <td>{students.UserName}</td>
                                         <td>{students.Password}</td>
-                                        <td><button className="btn btn-danger" onClick={() => deleteStudentAccount(students)}>Delete</button></td>
+                                        <td><button className="btn btn-danger" onClick={() => deleteStudentAccount(students)}>Delete <MdOutlineDelete /></button></td>
                                     </tr>
                                 ))}
                             </tbody>

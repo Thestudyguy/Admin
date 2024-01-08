@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { MdOutlineDelete } from 'react-icons/md';
 import { IoMdAddCircle } from 'react-icons/io';
 import { Modal } from "bootstrap";
-import { FcCheckmark } from 'react-icons/fc';
+import { FcCheckmark, FcDataSheet } from 'react-icons/fc';
 export default function Schedules({ state }) {
     const [schedule, setSchedule] = useState('');
     const [time, setTime] = useState('');
@@ -45,6 +45,7 @@ export default function Schedules({ state }) {
             onValue(dbref.schedule, () => { });
         }
     }, []);
+    
     //time
     useEffect(() => {
         const fetchTime = () => {
@@ -137,6 +138,7 @@ export default function Schedules({ state }) {
                                                 <button className="btn btn-danger" onClick={()=>handleDelete(department)}>
                                                     Delete<MdOutlineDelete />
                                                 </button>
+                                                <button className="btn btn-success mx-1" key={department.key} value={department.key} onClick={handleDepartmentChange}>View Subjects<FcDataSheet className="mt-1"/></button>
                                             </td>
                                         </tr>
                                     ))}

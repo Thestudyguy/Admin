@@ -8,10 +8,13 @@ import { GoArrowLeft } from "react-icons/go";
 import {FaEdit} from 'react-icons/fa';
 import { IoMdAddCircle } from 'react-icons/io';
 import {VscArrowSmallUp, VscArrowUp} from 'react-icons/vsc';
+import {FcReuse} from 'react-icons/fc';
 export default function Departments() {
     const nav = useNavigate();
     const location = useLocation();
-    const [subjects, setSubjects] = useState([]);
+  const [availableSchedule, setAvailableSchedule] = useState([]);
+  const [availableTime, setAvailableTime] = useState([]);
+  const [subjects, setSubjects] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [subjectCode, setSubjectCode] = useState('');
@@ -45,6 +48,8 @@ export default function Departments() {
         // Your other logic here
     }, [department]);
     const dbref = ref(db, `Subjects/${department}`);
+    const timeRef = ref(db, 'Subject Time');
+    const schedRef = ref(db, 'Subject Schedules');
     const instructorRef = ref(db, 'Instructors');
     useEffect(()=>{
         const fetchInstructors = () =>{
@@ -64,7 +69,46 @@ export default function Departments() {
         return()=>{
             onValue(instructorRef,()=>{});
         }
-    }, [])
+    }, []);
+    useEffect(()=>{
+        const fetchTime = () =>{
+          onValue(timeRef,(timeSnap)=>{
+            const timeData = timeSnap.val();
+            if(timeData){
+              const timeArray = Object.entries(timeData).map(([key, value])=>({key, ...value}));
+              setAvailableTime(timeArray);
+            }else{
+              setAvailableTime([]);
+            }
+          });
+        }
+        fetchTime();
+        return () =>{onValue(timeRef,()=>{});}
+      },[]);
+      //prevent time options infinite loop also optional lang sad 
+      //putting the availableTime in the dependancy array in the useEffect will cause it to loop infinitely 
+      //code below is the solution
+      useEffect(() => {
+        // this useEffect is optional
+        // This code will run whenever availableTime changes
+      }, [availableTime]);
+    
+      useEffect(()=>{
+        const fetchSched = () =>{
+          onValue(schedRef,(schedSnap)=>{
+            const schedData = schedSnap.val();
+            if(schedData){
+              const schedArray = Object.entries(schedData).map(([key, value])=>({key, ...value}));
+              setAvailableSchedule(schedArray);
+            }else{
+              setAvailableSchedule([]);
+            }
+          });
+        }
+        fetchSched();
+        return () =>{onValue(schedRef,()=>{});}
+      },[]);
+      useEffect(()=>{},[setAvailableSchedule]);
     useEffect(() => {
         const fetchData = () => {
             onValue(dbref, (snapshot) => {
@@ -303,32 +347,16 @@ export default function Departments() {
                                 <option value="2nd Term">2nd Term</option>
                             </select>
                             <select name="" className={`form-control my-3 ${formSubmitted && subjectSchedule.trim() === '' ? 'border border-danger' : ''}`} value={subjectSchedule} onChange={(e) => setsubjectSchedule(e.target.value)} id="">
-                                <option defaultValue='' selected hidden>Select Schedule</option>
-                                <option value="Monday">Monday</option>
-                                <option value="Tuesday">Tuesday</option>
-                                <option value="Wedsnday">Wedsnday</option>
-                                <option value="Thursday">Thursday</option>
-                                <option value="Friday">Friday</option>
-                                <option value="Saturday">Saturday</option>
-                                <option value="Monday-Wednsday-Friday">Monday-Wednsday-Friday</option>
-                                <option value="Monday-Tuesday">Monday-Tuesday</option>
+                                <option defaultValue=''hidden>Select Schedule</option>
+                                            {availableSchedule.map((sched)=>(
+                                <option value={sched.key}>{sched.key}</option>
+                            ))}
                             </select>
                             <select name="" id="" className={`form-control my-3 ${formSubmitted && subjectTime.trim() === '' ? 'border border-danger' : ''}`} value={subjectTime} onChange={(e) => setsubjecTime(e.target.value)}>
-                                <option value="" selected hidden>Select Time</option>
-                                <option value="8:00 AM - 10:00 AM">8:00 AM - 10:00 AM</option>
-                                <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
-                                <option value="1:00 PM - 3:00 PM">1:00 PM - 3:00 PM</option>
-                                <option value="3:00 PM - 5:00 PM">3:00 PM - 5:00 PM</option>
-                                <option value="5:00 PM - 7:00 PM">5:00 PM - 7:00 PM</option>
-                                <option value="7:00 PM - 9:00 PM">7:00 PM - 9:00 PM</option>
-                                <option value="8:30 AM - 10:30 AM">8:30 AM - 10:30 AM</option>
-                                <option value="10:30 AM - 12:00 PM">10:30 AM - 12:00 PM</option>
-                                <option value="1:30 PM - 3:30 PM">1:30 PM - 3:30 PM</option>
-                                <option value="3:30 PM - 5:30 PM">3:30 PM - 5:30 PM</option>
-                                <option value="5:30 PM - 7:30 PM">5:30 PM - 7:30 PM</option>
-                                <option value="7:30 PM - 9:30 PM">7:30 PM - 9:30 PM</option>
-                                <option value="8:00 AM - 12:00 PM">8:00 AM - 12:00 PM</option>
-                                <option value="1:00 PM - 5:00 PM">1:00 PM - 5:00 PM</option>
+                                <option value=""hidden>Select Time</option>
+                                            {availableTime.map((time)=>(
+                                <option value={time.key}>{time.key}</option>
+                            ))}
                             </select>
                         </form>
                         <div className="modal-footer">

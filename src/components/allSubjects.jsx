@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../dbconfig/firebaseConfig";
-import { onValue, ref, push } from "firebase/database";
+import { onValue, ref, push, get } from "firebase/database";
 import { GoArrowLeft } from 'react-icons/go';
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import { Modal } from "bootstrap";
+import { MdOutlineAddCircle } from "react-icons/md";
 
 export default function AllSubjects() {
   const [allSubjects, setAllSubjects] = useState([]);
@@ -12,6 +13,9 @@ export default function AllSubjects() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [availableTime, setAvailableTime] = useState([]);
+  const [subjectExist, setSubjectExist] = useState(false);
+  const [availableSchedule, setAvailableSchedule] = useState([]);
   const [formState, setFormState] = useState({
     SubjectCode: '',
     SubjectDescription: '',
@@ -20,12 +24,63 @@ export default function AllSubjects() {
     SubjectSchedule: '',
     SubjectTime: '',
     selectedDepartment: '',
-    selectedDepartments: [], // Initialize selectedDepartments as an empty array
+    selectedDepartments: [],
+  });
+  const [subjectToEdit, setSubjectToEdit] = useState({
+    SubjectCode: '',
+    SubjectDescription: '',
+    SubjectSemester: '',
+    SubjectTerm: '',
+    SubjectSchedule: '',
+    SubjectTime: '',
   });
   const [subjectFile, setSubjectFile] = useState(null);
   const [instructorLists, setInstructorLists] = useState([]);
   const instructorRef = ref(db, 'Instructors');
+  const timeRef = ref(db, 'Subject Time');
+  const schedRef = ref(db, 'Subject Schedules');
+  //time options
+  useEffect(() => {
+    const fetchTime = () => {
+      onValue(timeRef, (timeSnap) => {
+        const timeData = timeSnap.val();
+        if (timeData) {
+          const timeArray = Object.entries(timeData).map(([key, value]) => ({ key, ...value }));
+          setAvailableTime(timeArray);
+        } else {
+          setAvailableTime([]);
+        }
+      });
+    }
+    fetchTime();
+    return () => { onValue(timeRef, () => { }); }
+  }, []);
+  //prevent time options infinite loop also optional lang sad 
+  //putting the availableTime in the dependancy array in the useEffect will cause it to loop infinitely 
+  //code below is the solution
+  useEffect(() => {
+    // this useEffect is optional
+    // This code will run whenever availableTime changes
+  }, [availableTime]);
 
+  useEffect(() => {
+    const fetchSched = () => {
+      onValue(schedRef, (schedSnap) => {
+        const schedData = schedSnap.val();
+        if (schedData) {
+          const schedArray = Object.entries(schedData).map(([key, value]) => ({ key, ...value }));
+          setAvailableSchedule(schedArray);
+        } else {
+          setAvailableSchedule([]);
+        }
+      });
+    }
+    fetchSched();
+    return () => { onValue(schedRef, () => { }); }
+  }, []);
+  useEffect(() => { }, [setAvailableSchedule]);
+
+  //instructors
   useEffect(() => {
     onValue(instructorRef, (instructorSnaps) => {
       const instructorData = instructorSnaps.val();
@@ -47,26 +102,53 @@ export default function AllSubjects() {
   const submitForm = async (e) => {
     e.preventDefault();
   
+    // Check if the subject with the same code and description already exists
+    const subjectsRef = ref(db, 'Subjects');
+    const snapshot = await get(subjectsRef);
+  
+    if (snapshot.exists()) {
+      const allSubjectsData = snapshot.val();
+  
+      const subjectExists = Object.keys(allSubjectsData).some((department) =>
+        Object.values(allSubjectsData[department]).some(
+          (subject) =>
+            subject.SubjectCode === formState.SubjectCode &&
+            subject.SubjectDescription === formState.SubjectDescription
+        )
+      );
+  
+      if (subjectExists) {
+        console.error('Subject already exists in some department');
+        setSubjectExist(true);
+        setTimeout(() => {
+          setSubjectExist(false);
+        }, 3000);
+        return; // Stop the submission process
+      }
+    }
+  
     // Iterate through selected departments and push the new subject
-    formState.selectedDepartments.forEach(async (selectedDepartment) => {
-      const dataToPush = {
-        SubjectCode: formState.SubjectCode,
-        SubjectDescription: formState.SubjectDescription,
-        SubjectSemester: formState.SubjectSemester,
-        SubjectTerm: formState.SubjectTerm,
-        SubjectSchedule: formState.SubjectSchedule,
-        SubjectTime: formState.SubjectTime,
-      };
+    for (const selectedDepartment of formState.selectedDepartments) {
+      const departmentSubjectsRef = ref(db, `Subjects/${selectedDepartment}`);
   
       try {
-        const subjectsRef = ref(db, `Subjects/${selectedDepartment}`);
-        await push(subjectsRef, dataToPush);
+        // Subject doesn't exist in this department, push the new subject
+        const dataToPush = {
+          SubjectCode: formState.SubjectCode,
+          SubjectDescription: formState.SubjectDescription,
+          SubjectSemester: formState.SubjectSemester,
+          SubjectTerm: formState.SubjectTerm,
+          SubjectSchedule: formState.SubjectSchedule,
+          SubjectTime: formState.SubjectTime,
+        };
+  
+        await push(departmentSubjectsRef, dataToPush);
+        console.log('Subject added successfully to', selectedDepartment);
       } catch (error) {
         console.error(`Error pushing data to Firebase for ${selectedDepartment}:`, error);
       }
-    });
+    }
   
-    // Reset the form state and hide the modal
     setFormState({
       SubjectCode: '',
       SubjectDescription: '',
@@ -82,7 +164,8 @@ export default function AllSubjects() {
       modal.hide();
     }
   };
-  
+  useEffect(()=>{},[allSubjects]);
+
   const nav = useNavigate();
 
   useEffect(() => {
@@ -91,15 +174,15 @@ export default function AllSubjects() {
       const subjectsData = snapshot.val();
       const combinedSubjects = subjectsData
         ? Object.keys(subjectsData).reduce((result, department) => {
-            Object.keys(subjectsData[department]).forEach((subjectKey) => {
-              result.push({
-                department,
-                key: subjectKey,
-                ...subjectsData[department][subjectKey],
-              });
+          Object.keys(subjectsData[department]).forEach((subjectKey) => {
+            result.push({
+              department,
+              key: subjectKey,
+              ...subjectsData[department][subjectKey],
             });
-            return result;
-          }, [])
+          });
+          return result;
+        }, [])
         : [];
       setAllSubjects(combinedSubjects);
     });
@@ -210,7 +293,7 @@ export default function AllSubjects() {
   return (
     <div className="container-fluid" id="allSubjects">
       <div className="container p-5">
-      {/* <button className="btn btn-secondary my-2" onClick={handleHistory}>
+        {/* <button className="btn btn-secondary my-2" onClick={handleHistory}>
         <GoArrowLeft className="mb-1" />
       </button> */}
         <div className="card" style={{ resize: 'auto' }}>
@@ -244,26 +327,26 @@ export default function AllSubjects() {
                 </tr>
               </thead>
               <tbody>
-              {filteredSubjects
-                .filter((subject) => subject.department && subject.SubjectCode) // Exclude subjects without valid departments or SubjectCode
-                .map((subject) => (
-                  <tr key={subject.key}>
-                    <td>{subject.department}</td>
-                    <td>{subject.SubjectCode}</td>
-                    <td>{subject.SubjectDescription}</td>
-                    <td>{subject.SubjectSchedule}</td>
-                    <td>{subject.SubjectSemester}</td>
-                    <td>{subject.SubjectTerm}</td>
-                    <td>{subject.SubjectTime}</td>
-                  </tr>
-                ))}
-            </tbody>
+                {filteredSubjects
+                  .filter((subject) => subject.department && subject.SubjectCode)
+                  .map((subject) => (
+                    <tr key={subject.key}>
+                      <td>{subject.department}</td>
+                      <td>{subject.SubjectCode}</td>
+                      <td>{subject.SubjectDescription}</td>
+                      <td>{subject.SubjectSchedule}</td>
+                      <td>{subject.SubjectSemester}</td>
+                      <td>{subject.SubjectTerm}</td>
+                      <td>{subject.SubjectTime}</td>
+                    </tr>
+                  ))}
+              </tbody>
 
             </table>
           </div>
           <div className="card-footer">
             <button className="btn btn-primary" onClick={addNewSubject}>
-              New
+              Add New Subject <MdOutlineAddCircle/>
             </button>
           </div>
         </div>
@@ -274,6 +357,7 @@ export default function AllSubjects() {
             <div className="modal-header">
               <div className="container">
                 <span className="lead">Add new subject</span>
+            {subjectExist && <div className="alert alert-danger text-center">Subject already exist</div>}
               </div>
             </div>
             <div className="modal-body">
@@ -316,23 +400,23 @@ export default function AllSubjects() {
                 </select>
                 <hr />
                 <div className="departments d-flex flex-column">
-                {formState.allDepartments && formState.allDepartments.map((department) => (
-  <div key={department} className="form-check">
-    <input
-      type="checkbox"
-      id={`department_${department}`}
-      name="selectedDepartments"
-      value={department}
-      onChange={handleDepartmentChange}
-      checked={formState.selectedDepartments.includes(department)}
-      className="form-check-input"
-    />
-    <label htmlFor={`department_${department}`} className="form-check-label">
-      {department}
-    </label>
-  </div>
-))}
-</div>
+                  {formState.allDepartments && formState.allDepartments.map((department) => (
+                    <div key={department} className="form-check">
+                      <input
+                        type="checkbox"
+                        id={`department_${department}`}
+                        name="selectedDepartments"
+                        value={department}
+                        onChange={handleDepartmentChange}
+                        checked={formState.selectedDepartments.includes(department)}
+                        className="form-check-input"
+                      />
+                      <label htmlFor={`department_${department}`} className="form-check-label">
+                        {department}
+                      </label>
+                    </div>
+                  ))}
+                </div>
                 <hr />
                 <select
                   name="SubjectSchedule"
@@ -341,14 +425,9 @@ export default function AllSubjects() {
                   className="form-control mb-2"
                 >
                   <option value="" hidden>Select Schedule</option>
-                  <option value="Monday">Monday</option>
-                  <option value="Tuesday">Tuesday</option>
-                  <option value="Wednesday">Wednesday</option>
-                  <option value="Thursday">Thursday</option>
-                  <option value="Friday">Friday</option>
-                  <option value="Saturday">Saturday</option>
-                  <option value="Monday-Wednesday-Friday">Monday-Wednesday-Friday</option>
-                  <option value="Monday-Tuesday">Monday-Tuesday</option>
+                  {availableSchedule.map((sched) => (
+                    <option value={sched.key}>{sched.key}</option>
+                  ))}
                 </select>
                 <select
                   name="SubjectTime"
@@ -357,7 +436,9 @@ export default function AllSubjects() {
                   className="form-control mb-2"
                 >
                   <option value="" hidden>Select Time</option>
-                  <option value="8:00 AM - 10:00 AM">8:00 AM - 10:00 AM</option>
+                  {availableTime.map((time) => (
+                    <option value={time.key}>{time.key}</option>
+                  ))}
                   {/* ... add more time options ... */}
                 </select>
               </form>

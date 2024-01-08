@@ -4,6 +4,8 @@ import { db } from "../dbconfig/firebaseConfig";
 import { getAuth, signOut } from "firebase/auth";
 import { push, ref, onValue, remove, get, set } from "firebase/database";
 import { Modal } from "bootstrap";
+import {FcVoicePresentation, FcHighPriority} from 'react-icons/fc';
+import { MdOutlineDelete} from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const dbref = ref(db, "Instructors");
@@ -384,15 +386,15 @@ export default function Dashboard() {
                         <td>{instructor.Department}</td>
                         <td>
                           <button
-                            className="btn btn-primary"
+                            className="btn btn-success"
                             onClick={() => handleViewClick(instructor)}
                           >
-                            View Details
+                            View Details <FcVoicePresentation className="h5"/>
                           </button>
                         </td>
                         <td>
                           <button className="btn btn-danger" onClick={() => handleDeleteClick(instructor)}>
-                            Delete
+                            Delete <MdOutlineDelete/>
                           </button>
                         </td>
                       </tr>
@@ -637,6 +639,9 @@ export default function Dashboard() {
       <div id="delete" className="modal fade" tabIndex="-1" role="dialog">
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
+            <div className="modal-header">
+              <div className="modal-title lead">You are Deleting an Instructors Record <FcHighPriority className="mb-1 h3"/></div>
+            </div>
             <div className="modal-body text-dark lead">
               Are you sure you want to delete <b>{selectedInstructor?.Instructor}?</b> <br /> Deleting the instructor's record will also delete the instructor's schedule
             </div>
